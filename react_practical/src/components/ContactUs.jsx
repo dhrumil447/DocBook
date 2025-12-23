@@ -1,16 +1,13 @@
-import React, { useState } from "react";
-import axios from "axios"; // ✅ Import axios
-import { Container, Row, Col, Form, Button, Card } from "react-bootstrap";
-import { motion } from "framer-motion";
-import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock } from "react-icons/fa";
-import { toast } from "react-toastify";
+import { useState } from 'react';
+import { Box, Container, Grid, Typography, TextField, Button } from '@mui/material';
+import { Phone, Email, LocationOn, AccessTime } from '@mui/icons-material';
+import { motion } from 'framer-motion';
+import { toast } from 'react-toastify';
+import AnimatedCard from './shared/AnimatedCard';
+import { api } from '../utils/api';
 
 const ContactUs = () => {
-  const [contactData, setContactData] = useState({
-    name: "",
-    email: "",
-    message: ""
-  });
+  const [contactData, setContactData] = useState({ name: '', email: '', message: '' });
 
   const handleChange = (e) => {
     setContactData({ ...contactData, [e.target.name]: e.target.value });
@@ -18,92 +15,76 @@ const ContactUs = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      await axios.post(`${import.meta.env.VITE_BASE_URL}/contacts`, contactData);
-      toast("Message submitted successfully!");
-      setContactData({ name: "", email: "", message: "" }); // Clear form
-    } catch (error) {
-      console.error("Error submitting message:", error);
-      toast("Something went wrong. Try again.");
+    const { error } = await api.createContact(contactData);
+    
+    if (error) {
+      toast.error('Something went wrong. Try again.');
+    } else {
+      toast.success('Message submitted successfully!');
+      setContactData({ name: '', email: '', message: '' });
     }
   };
 
-  return (
-    <Container fluid style={{ backgroundColor: "#fdfaee", minHeight: "100vh", padding: "50px" }}>
-      <Row className="justify-content-center">
-        <Col md={5} className="mb-4">
-          <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
-            <Card style={{ backgroundColor: "#fff0bb", borderRadius: "12px", padding: "20px", boxShadow: "5px 5px 15px rgba(0,0,0,0.1)" }}>
-              <h2 className="text-center mb-4" style={{ color: "#444" }}>Contact Us</h2>
-              <Form onSubmit={handleSubmit}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Name</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="name"
-                    value={contactData.name}
-                    onChange={handleChange}
-                    placeholder="Enter your name"
-                    required
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Email</Form.Label>
-                  <Form.Control
-                    type="email"
-                    name="email"
-                    value={contactData.email}
-                    onChange={handleChange}
-                    placeholder="Enter your email"
-                    required
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Message</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    name="message"
-                    value={contactData.message}
-                    onChange={handleChange}
-                    rows={3}
-                    placeholder="Your message"
-                    required
-                  />
-                </Form.Group>
-                <Button variant="warning" className="w-100" style={{ backgroundColor: "#FFF04B", border: "none" }} type="submit">
-                  Submit
-                </Button>
-              </Form>
-            </Card>
-          </motion.div>
-        </Col>
+  const contactInfo = [
+    { icon: LocationOn, text: '123 Street, Prahlad Nagar, Ahmedabad, India', color: 'error' },
+    { icon: Phone, text: '+91 98765 43210', color: 'success' },
+    { icon: Email, text: 'support@docbook.com', color: 'primary' },
+    { icon: AccessTime, text: 'Mon - Sat: 9 AM - 6 PM', color: 'warning' },
+  ];
 
-        {/* Right Column - Location Info remains same */}
-        <Col md={5} className="mb-4">
-          <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
-            <Card style={{ backgroundColor: "#fff0bb", borderRadius: "12px", padding: "20px", boxShadow: "5px 5px 15px rgba(0,0,0,0.1)" }}>
-              <h3 className="text-center mb-4" style={{ color: "#444" }}>Our Location</h3>
-              <p><FaMapMarkerAlt color="red" /> 123 Street, Prahlad Nagar, Ahmedabad, India</p>
-              <p><FaPhone color="green" /> +91 98765 43210</p>
-              <p><FaEnvelope color="blue" /> support@docbook.com</p>
-              <p><FaClock color="orange" /> Mon - Sat: 9 AM - 6 PM</p>
-              <div className="mt-3">
-                <iframe
-                  title="Google Map"
-                  src="https://www.google.com/maps/embed?pb=!1m18..."
-                  width="100%"
-                  height="250"
-                  style={{ border: 0, borderRadius: "8px" }}
-                  allowFullScreen=""
-                  loading="lazy"
-                ></iframe>
-              </div>
-            </Card>
-          </motion.div>
-        </Col>
-      </Row>
-    </Container>
+  return (
+    <Box sx={{ bgcolor: '#fdfaee', minHeight: '100vh', py: 6 }}>
+      <Container>
+        <Grid container spacing={4} justifyContent="center">
+          <Grid item xs={12} md={5}>
+            <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
+              <AnimatedCard sx={{ bgcolor: '#fff0bb', p: 3 }}>
+                <Typography variant="h4" textAlign="center" mb={3} fontWeight="bold">
+                  Contact Us
+                </Typography>
+                <Box component="form" onSubmit={handleSubmit}>
+                  <TextField fullWidth label="Name" name="name" value={contactData.name} onChange={handleChange} required margin="normal" />
+                  <TextField fullWidth label="Email" name="email" type="email" value={contactData.email} onChange={handleChange} required margin="normal" />
+                  <TextField fullWidth label="Message" name="message" multiline rows={3} value={contactData.message} onChange={handleChange} required margin="normal" />
+                  <Button type="submit" variant="contained" fullWidth sx={{ mt: 2, bgcolor: '#FFF04B', color: 'black', '&:hover': { bgcolor: '#FFD700' } }}>
+                    Submit
+                  </Button>
+                </Box>
+              </AnimatedCard>
+            </motion.div>
+          </Grid>
+
+          <Grid item xs={12} md={5}>
+            <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
+              <AnimatedCard sx={{ bgcolor: '#fff0bb', p: 3 }}>
+                <Typography variant="h4" textAlign="center" mb={3} fontWeight="bold">
+                  Our Location
+                </Typography>
+                {contactInfo.map(({ icon: Icon, text, color }, idx) => (
+                  <Box key={idx} display="flex" alignItems="center" mb={2}>
+                    <Icon color={color} sx={{ mr: 1 }} />
+                    <Typography variant="body1">{text}</Typography>
+                  </Box>
+                ))}
+                <Box mt={3} borderRadius={2} overflow="hidden">
+                  <iframe
+                    title="Google Map"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3671.9876543210!2d72.5079!3d23.0344!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjPCsDEyJzAwLjAiTiA3MsKwMzAnMjguNCJF!5e0!3m2!1sen!2sin!4v1234567890"
+                    width="100%"
+                    height="250"
+                    style={{ border: 0 }}
+                    allowFullScreen=""
+                    loading="lazy"
+                  />
+                </Box>
+              </AnimatedCard>
+            </motion.div>
+          </Grid>
+        </Grid>
+      </Container>
+    </Box>
   );
 };
 
 export default ContactUs;
+

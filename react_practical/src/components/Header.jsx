@@ -1,71 +1,82 @@
 import { useEffect, useState } from 'react';
-import {Button} from 'react-bootstrap';
-import Container from 'react-bootstrap/Container';
-import Nav from 'react-bootstrap/Nav';
-import Navbar from 'react-bootstrap/Navbar';
-import NavDropdown from 'react-bootstrap/NavDropdown';
-import { BiLogInCircle } from 'react-icons/bi';
-import { FaCircleUser } from "react-icons/fa6";
-import { TbLogout } from "react-icons/tb";
-import { TbReportMedical } from "react-icons/tb";
-import { TiUser } from "react-icons/ti";
-import { NavLink, Outlet, useNavigate } from 'react-router';
-// import { useForm } from 'react-hook-form'; 
+import { AppBar, Toolbar, Typography, Button, Box, IconButton, Menu, MenuItem, Avatar } from '@mui/material';
+import { Menu as MenuIcon, Login as LoginIcon, Logout as LogoutIcon, Person as PersonIcon, Description as DescriptionIcon } from '@mui/icons-material';
+import { NavLink, useNavigate } from 'react-router';
 import { ShowOnLogin, ShowOnLogout } from './hiddenlinks';
 import { toast } from 'react-toastify';
-
+import { auth } from '../utils/auth';
 
 const Header = () => {
+  const navigate = useNavigate();
+  const [username, setUsername] = useState('');
+  const [anchorEl, setAnchorEl] = useState(null);
 
-  const redirect =  useNavigate()
-  const handleLogout = ()=>{
-    if(sessionStorage.getItem("DocBook") != null){
-      sessionStorage.removeItem("DocBook")
-      toast.success("loggedout successfully")
-      redirect('/') } }
-  const [username,setUsername] = useState("")
-  useEffect(()=>{
-    if(sessionStorage.getItem("DocBook") != null){
-      let obj = JSON.parse(sessionStorage.getItem("DocBook"))
-      setUsername(obj.username)
-    }
-  },[sessionStorage.getItem("DocBook")])
-  
+  useEffect(() => {
+    setUsername(auth.getUsername());
+  }, [sessionStorage.getItem('DocBook')]);
+
+  const handleLogout = () => {
+    auth.logout();
+    toast.success('Logged out successfully');
+    setAnchorEl(null);
+    navigate('/');
+  };
+
+  const navLinks = [
+    { to: '/', label: 'Home' },
+    { to: '/finddoctor', label: 'Find Doctors' },
+    { to: '/About', label: 'About Us' },
+    { to: '/Contact', label: 'Contact Us' },
+  ];
+
   return (
-  <>
-   <Navbar expand="lg" style={{backgroundColor: "#fdfaee"}} >
-      <Container fluid>     
-        <Navbar.Brand href="#home" className='fs-3 fw-bold ms-3' style={{color:'#FFF04b' , fontFamily:"cursive"}}>DocBook</Navbar.Brand>
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="ms-auto">
-            <Nav.Link as={NavLink} to="/">Home</Nav.Link>
-            <Nav.Link as={NavLink} to="/finddoctor" >Find Doctors</Nav.Link>
-            {/* <Nav.Link as={NavLink} to="/Appointments">Appointments</Nav.Link> */}
-            <Nav.Link as={NavLink} to="/About">About Us</Nav.Link>
-            <Nav.Link as={NavLink} to="/Contact">Contact Us</Nav.Link>
+    <AppBar position="static" sx={{ bgcolor: '#fdfaee', color: 'black', boxShadow: 1 }}>
+      <Toolbar>
+        <Typography variant="h5" fontWeight="bold" sx={{ color: '#FFF04B', fontFamily: 'cursive', flexGrow: 1 }}>
+          DocBook
+        </Typography>
 
-            <ShowOnLogin>
-            <FaCircleUser className='ms-3 mt-1' style={{fontSize:'35px'}}/>
-            <NavDropdown title={`Welcome ${username}`} id="basic-nav-dropdown" className='me-3'>
-              <NavDropdown.Item as={NavLink} to="/profile"><TiUser style={{fontSize:'23px', marginRight:'5px'}} />My Profile</NavDropdown.Item><NavDropdown.Divider />
-              <NavDropdown.Item as={NavLink} to="/medicalreport"><TbReportMedical style={{fontSize:'23px', marginRight:'5px'}} />My Medical Report
-              </NavDropdown.Item><NavDropdown.Divider />
+        <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2 }}>
+          {navLinks.map((link) => (
+            <Button key={link.to} component={NavLink} to={link.to} sx={{ color: 'black' }}>
+              {link.label}
+            </Button>
+          ))}
+        </Box>
 
-              <NavDropdown.Item  onClick={handleLogout}><TbLogout style={{fontSize:'23px', marginRight:'5px', marginLeft:'2px'}}/>LogOut</NavDropdown.Item>
-            </NavDropdown>
-            </ShowOnLogin>
+        <ShowOnLogin>
+          <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
+            <IconButton onClick={(e) => setAnchorEl(e.currentTarget)}>
+              <Avatar sx={{ bgcolor: '#FFF04B', color: 'black' }}>{username[0]?.toUpperCase()}</Avatar>
+            </IconButton>
+            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+              <MenuItem onClick={() => { navigate('/profile'); setAnchorEl(null); }}>
+                <PersonIcon sx={{ mr: 1 }} /> My Profile
+              </MenuItem>
+              <MenuItem onClick={() => { navigate('/medicalreport'); setAnchorEl(null); }}>
+                <DescriptionIcon sx={{ mr: 1 }} /> My Medical Report
+              </MenuItem>
+              <MenuItem onClick={handleLogout}>
+                <LogoutIcon sx={{ mr: 1 }} /> Logout
+              </MenuItem>
+            </Menu>
+          </Box>
+        </ShowOnLogin>
 
-            <ShowOnLogout>
-          <Button  as={NavLink} to="/Login" style={{backgroundColor:"#FFF04B" , border:"2px solid #FFF04B" , color:"Black"}}><BiLogInCircle></BiLogInCircle> LogIn</Button>
-          </ShowOnLogout>
-            
-          </Nav>
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
-  </>
-  )
-}
+        <ShowOnLogout>
+          <Button
+            component={NavLink}
+            to="/Login"
+            variant="contained"
+            startIcon={<LoginIcon />}
+            sx={{ bgcolor: '#FFF04B', color: 'black', ml: 2, '&:hover': { bgcolor: '#FFD700' } }}
+          >
+            Login
+          </Button>
+        </ShowOnLogout>
+      </Toolbar>
+    </AppBar>
+  );
+};
 
-export default Header
+export default Header;

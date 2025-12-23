@@ -1,52 +1,62 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { FaPenAlt, FaTrash, FaUserCheck, FaEye } from 'react-icons/fa';
 import { useNavigate } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectdoctors, store_doctors } from '../redux/doctorSlice';
-import { Modal, Button, Card, Row, Col } from 'react-bootstrap';
+import { Modal, Button, Card, Row, Col, Alert } from 'react-bootstrap';
 import { toast } from 'react-toastify';
+import { api } from '../utils/api';
 
 const ViewDoctor = () => {
-  const [selectedDoctor, setSelectedDoctor] = useState([]);
+  const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isDeleted, setIsDeleted] = useState(false);
   const dispatch = useDispatch();
   const redirect = useNavigate();
   const doctors = useSelector(selectdoctors);
 
   const getData = async () => {
-    try {
-      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/doctors`);
-      const doctorList = Array.isArray(res.data.doctors) ? res.data.doctors : res.data;
-      dispatch(store_doctors(doctorList));
-    } catch (err) {
-      console.log(err);
+    console.log('📥 Fetching doctors...');
+    const { data, error } = await api.fetchDoctors();
+    if (error) {
+      console.error('❌ Error fetching doctors:', error);
+      toast.error('Failed to load doctors');
+    } else {
+      console.log('✅ Doctors loaded:', data.length);
+      dispatch(store_doctors(data));
     }
   };
 
   useEffect(() => {
     getData();
-  }, []);
+  }, [isDeleted]);
 
-  const handleDelete = async(id)=>{
-    if(window.confirm("are you sure to delete this??")){
-      try{
-        await axios.delete(`${import.meta.env.VITE_BASE_URL}/doctors/${id}`)
-        toast.success("doctor deleted successfully")
-        setIsDeleted(!isDeleted)
+  const handleDelete = async(id) => {
+    if(window.confirm("Are you sure you want to delete this doctor?")) {
+      console.log('🗑️ Deleting doctor:', id);
+      const { data, error } = await api.deleteDoctor(id);
+      if (error) {
+        console.error('❌ Delete failed:', error);
+        toast.error(error);
+      } else {
+        console.log('✅ Doctor deleted');
+        toast.success('Doctor deleted successfully');
+        setIsDeleted(!isDeleted);
       }
-      catch(err){toast.error(err)}
-  }
-}
+    }
+  };
 
   const handleApprove = async (id) => {
-    try {
-      await axios.patch(`${import.meta.env.VITE_BASE_URL}/doctors/${id}`, { status: "Accept" });
+    console.log('✅ Approving doctor:', id);
+    const { data, error } = await api.patchDoctor(id, { status: 'Accept' });
+    if (error) {
+      console.error('❌ Approval failed:', error);
+      toast.error(error);
+    } else {
+      console.log('✅ Doctor approved');
+      toast.success('Doctor approved!');
       getData();
-      toast.success("Doctor approved!");
-    } catch (err) {
-      console.log(err);
     }
   };
 
@@ -58,12 +68,16 @@ const ViewDoctor = () => {
   const handleAcceptStatus = async () => {
     if (!selectedDoctor) return;
     setLoading(true);
-    try {
-      await axios.patch(`${import.meta.env.VITE_BASE_URL}/doctors/${selectedDoctor.id}`, { status: "Accept" });
+    console.log('✅ Accepting doctor status:', selectedDoctor.id);
+    const { data, error } = await api.patchDoctor(selectedDoctor.id, { status: 'Accept' });
+    if (error) {
+      console.error('❌ Status update failed:', error);
+      toast.error(error);
+    } else {
+      console.log('✅ Doctor status updated');
+      toast.success('Doctor accepted successfully!');
       getData();
       setShowModal(false);
-    } catch (err) {
-      console.log(err);
     }
     setLoading(false);
   };
@@ -95,12 +109,12 @@ const ViewDoctor = () => {
               <tr key={index}>
                 <td>{index + 1}</td>
                 <td>{doctor.username}</td>
-                <td>{doctor.specialization}</td>
-                <td>&#8377;{doctor.fees}</td>
-                <td>{doctor.clinicName}</td>
+                <td>{doctor.specialization || 'N/A'}</td>
+                <td>₹{doctor.consultation_fee || 0}</td>
+                <td>{doctor.clinic_name || 'N/A'}</td>
                 <td>
-                  <span className={`badge ${doctor.status === "Accept" ? 'bg-success' : 'bg-warning text-dark'}`}>
-                    {doctor.status}
+                  <span className={`badge ${doctor.status === "Accept" ? 'bg-success' : doctor.status === "Reject" ? 'bg-danger' : 'bg-warning text-dark'}`}>
+                    {doctor.status || 'Pending'}
                   </span>
                 </td>
                 <td>
@@ -147,66 +161,114 @@ const ViewDoctor = () => {
           {selectedDoctor && (
             <Card className="shadow p-3 rounded">
               <Row>
-                <Col md={12} className="text-center">
-                  <img
-                    src={selectedDoctor.profileimg}
-                    alt="Profile"
-                    className="rounded mb-3"
-                    style={{ width: '150px', height: '150px', objectFit: 'cover' }}
-                  />
-                  <h5 className="fw-bold">Dr. {selectedDoctor.username}</h5>
-                  <p className="text-muted">{selectedDoctor.specialization}</p>
-                  <p><strong>Status:</strong> <span className={`badge ${selectedDoctor.status === 'Accept' ? 'bg-success' : 'bg-warning text-dark'}`}>{selectedDoctor.status}</span></p>
-                
+                <Col md={12}>
+                  {/* Profile Image */}
+                  <div className="text-center mb-3">
+                    {selectedDoctor.profile_image ? (
+                      <img
+                        src={selectedDoctor.profile_image}
+                        alt="Profile"
+                        className="rounded-circle mb-3"
+                        style={{ width: '150px', height: '150px', objectFit: 'cover' }}
+                        onError={(e) => {
+                          e.target.src = 'https://via.placeholder.com/150?text=No+Image';
+                        }}
+                      />
+                    ) : (
+                      <div className="rounded-circle mb-3 bg-secondary d-flex align-items-center justify-content-center" style={{ width: '150px', height: '150px', margin: '0 auto' }}>
+                        <span className="text-white fs-1">{selectedDoctor.username?.charAt(0).toUpperCase()}</span>
+                      </div>
+                    )}
+                    <h5 className="fw-bold">Dr. {selectedDoctor.username}</h5>
+                    <p className="text-muted">{selectedDoctor.specialization || 'Not Specified'}</p>
+                    <p><strong>Status:</strong> <span className={`badge ${selectedDoctor.status === 'Accept' ? 'bg-success' : selectedDoctor.status === 'Reject' ? 'bg-danger' : 'bg-warning text-dark'}`}>{selectedDoctor.status || 'Pending'}</span></p>
+                  </div>
+
+                  {/* Doctor Details */}
                   <Row className="mb-2">
-                    <Col><strong>Email:</strong> {selectedDoctor.email}</Col>
-                    <Col><strong>Phone:</strong> {selectedDoctor.phone}</Col>
+                    <Col md={6}><strong>Email:</strong> {selectedDoctor.email}</Col>
+                    <Col md={6}><strong>Phone:</strong> {selectedDoctor.phone || 'N/A'}</Col>
                   </Row>
                   <Row className="mb-2">
-                    <Col><strong>Gender:</strong> {selectedDoctor.gender}</Col>
-                    <Col><strong>Age:</strong> {selectedDoctor.age}</Col>
+                    <Col md={6}><strong>Gender:</strong> {selectedDoctor.gender || 'N/A'}</Col>
+                    <Col md={6}><strong>Age:</strong> {selectedDoctor.age || 'N/A'}</Col>
                   </Row>
                   <Row className="mb-2">
-                    <Col><strong>Qualification:</strong> {selectedDoctor.qualification}</Col>
-                    <Col><strong>Experience:</strong> {selectedDoctor.experience} yrs</Col>
+                    <Col md={6}><strong>Qualification:</strong> {selectedDoctor.qualification || 'N/A'}</Col>
+                    <Col md={6}><strong>Experience:</strong> {selectedDoctor.experience || 0} years</Col>
                   </Row>
                   <Row className="mb-2">
-                    <Col><strong>Clinic Name:</strong> {selectedDoctor.clinicName}</Col>
-                    <Col><strong>Fees:</strong> ₹{selectedDoctor.fees}</Col>
+                    <Col md={6}><strong>Clinic Name:</strong> {selectedDoctor.clinic_name || 'N/A'}</Col>
+                    <Col md={6}><strong>Consultation Fee:</strong> ₹{selectedDoctor.consultation_fee || 0}</Col>
                   </Row>
                   <Row className="mb-2">
-                    <Col><strong>Available Days:</strong> {selectedDoctor.availableDays || 'Not Provided'}</Col>
-                    <Col><strong>Available Time:</strong> {selectedDoctor.availableTime || 'Not Provided'}</Col>
+                    <Col md={6}><strong>Available Days:</strong> {selectedDoctor.available_days || 'Not Provided'}</Col>
+                    <Col md={6}><strong>Available Time:</strong> {selectedDoctor.available_time || 'Not Provided'}</Col>
                   </Row>
-                  <Row className="mb-2">
-                    <Col><strong>Clinic Address:</strong> {selectedDoctor.clinicAddress}</Col>
+                  <Row className="mb-3">
+                    <Col md={12}><strong>Clinic Address:</strong> {selectedDoctor.clinic_address || 'N/A'}</Col>
+                    <Col md={12}><strong>City:</strong> {selectedDoctor.city || 'N/A'}</Col>
                   </Row>
                   
                   <hr />
-                  <br/> <br/> <br/>
-                  <p className="fw-bold">Identity Proof:</p>
-                  <img
-                    src={selectedDoctor.identityproof}
-                    alt="Identity Proof"
-                    style={{ width: '100%', maxWidth: '100%' }}
-                    className="rounded"
-                  /><hr/>
 
-                  <p className="fw-bold">Degree Certificate:</p>
-                  <img
-                    src={selectedDoctor.degreeProof}
-                    alt="Identity Proof"
-                    style={{ width: '100%', maxWidth: '100%' }}
-                    className="rounded"
-                  /><hr/>
+                  {/* Document Proofs */}
+                  {selectedDoctor.identity_proof && (
+                    <div className="mb-3">
+                      <p className="fw-bold">Identity Proof:</p>
+                      <img
+                        src={selectedDoctor.identity_proof}
+                        alt="Identity Proof"
+                        style={{ width: '100%', maxHeight: '400px', objectFit: 'contain' }}
+                        className="rounded border"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextElementSibling.style.display = 'block';
+                        }}
+                      />
+                      <Alert variant="info" style={{ display: 'none' }}>Image not available</Alert>
+                    </div>
+                  )}
+
+                  {selectedDoctor.degree_proof && (
+                    <div className="mb-3">
+                      <p className="fw-bold">Degree Certificate:</p>
+                      <img
+                        src={selectedDoctor.degree_proof}
+                        alt="Degree Proof"
+                        style={{ width: '100%', maxHeight: '400px', objectFit: 'contain' }}
+                        className="rounded border"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextElementSibling.style.display = 'block';
+                        }}
+                      />
+                      <Alert variant="info" style={{ display: 'none' }}>Image not available</Alert>
+                    </div>
+                  )}
                  
-                  <p className="fw-bold"> Clinic Registration Proof:</p>
-                  <img
-                    src={selectedDoctor.clinicRegProof}
-                    alt="Identity Proof"
-                    style={{ width: '100%', maxWidth: '100%' }}
-                    className="rounded"
-                  /><hr/>
+                  {selectedDoctor.clinic_reg_proof && (
+                    <div className="mb-3">
+                      <p className="fw-bold">Clinic Registration Proof:</p>
+                      <img
+                        src={selectedDoctor.clinic_reg_proof}
+                        alt="Clinic Registration Proof"
+                        style={{ width: '100%', maxHeight: '400px', objectFit: 'contain' }}
+                        className="rounded border"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextElementSibling.style.display = 'block';
+                        }}
+                      />
+                      <Alert variant="info" style={{ display: 'none' }}>Image not available</Alert>
+                    </div>
+                  )}
+
+                  {!selectedDoctor.identity_proof && !selectedDoctor.degree_proof && !selectedDoctor.clinic_reg_proof && (
+                    <Alert variant="warning">
+                      <strong>No documents uploaded yet</strong>
+                    </Alert>
+                  )}
                 </Col>
               </Row>
             </Card>

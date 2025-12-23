@@ -1,142 +1,132 @@
-import { Button } from "react-bootstrap";
-import React, { useState } from "react"; 
-import { Card, Col, Container, Form, InputGroup, Row } from "react-bootstrap";
-import { BsEye, BsEyeSlash } from "react-icons/bs";
-import { toast } from 'react-toastify'
-import { Link, useNavigate } from "react-router";
-import axios from "axios";
+import { useState } from 'react';
+import { Box, Container, Grid, Card, Typography, TextField, Button, Link, IconButton, InputAdornment, MenuItem } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router';
+import { api } from '../utils/api';
+import { validation } from '../utils/validation';
 
 const Register = () => {
-   const redirect =  useNavigate()
-      const [user,setUser] = useState({username:'',email:'',password:'',cpassword:'',phone: '',gender: '',age: '',isPatients:true})
-    const [show,setShow] = useState(false)
-    const handleSubmit = async(e)=>{
-      e.preventDefault()
-      let {username,email,password,cpassword,phone,gender,age} = user
-      let pattern = /^[\w\.]+\@[\w]+\.[a-zA-Z]{3}$/
-      if(!username || !email || !password || !phone || !gender || !age) {
-        toast.error("please fill all the fields")
-      }
-      else if(!pattern.test(email)){
-        toast.error("invalid email")
-      }
-      else if(password != cpassword){
-        toast.error("password not match")
-      }
-      else{
+  const navigate = useNavigate();
+  const [show, setShow] = useState(false);
+  const [user, setUser] = useState({ username: '', email: '', password: '', cpassword: '', phone: '', gender: '', age: '', isPatients: true });
 
-        try{
-          await axios.post(`${import.meta.env.VITE_BASE_URL}/patients`, {...user, createdAt:new Date()})
-  
-          toast.success("registered successfully")
-          redirect('/Login')
-        }
-        catch(err){toast.error(err)}
-        }
-      }
+  const handleChange = (e) => {
+    setUser({ ...user, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    console.log('🔵 Registration form submitted');
+    console.log('📦 User data:', user);
+    
+    const { isValid, errors } = validation.validateRegistration(user);
+    
+    if (!isValid) {
+      console.log('❌ Validation failed:', errors);
+      Object.values(errors).forEach(error => toast.error(error));
+      return;
+    }
+
+    console.log('✅ Validation passed, calling API...');
+    const { data, error } = await api.createPatient({ ...user, createdAt: new Date() });
+    
+    if (error) {
+      console.error('❌ Registration API error:', error);
+      toast.error(error);
+    } else {
+      console.log('✅ Registration successful:', data);
+      toast.success('Registered successfully');
+      navigate('/Login');
+    }
+  };
 
   return (
-    <>
-      <Container className="mt-5">
-        <Card
-          style={{
-            maxWidth: "900px",
-            margin: "auto",
-            padding: "20px",
-            borderRadius: "10px",
-            boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-          }}
-        >
-            
-          <Row>
-            <Col md={5} style={{display: "flex",alignItems: "center",justifyContent: "center",}}>
-              <img src="https://res.cloudinary.com/dhrumil7/image/upload/v1743702401/illustration_m37hb6.png" alt="Doctor" style={{ width: "100%", borderRadius: "10px" }}/>
-            </Col>
+    <Container maxWidth="md" sx={{ mt: 5, mb: 5 }}>
+      <Card sx={{ p: 3, boxShadow: 3, borderRadius: 2 }}>
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={5} display="flex" alignItems="center" justifyContent="center">
+            <Box component="img" src="https://res.cloudinary.com/dhrumil7/image/upload/v1743702401/illustration_m37hb6.png" width="100%" borderRadius={2} />
+          </Grid>
 
-            <Col md={7}>
-              <h3 style={{ textAlign: "left",color: "#FFF40B",fontWeight: "bold",}}>Patient Register</h3>
-              <p style={{ textAlign:"right" , fontSize:"15px"}}>Are you a dctor?<Link to="/doctorreg"  className="text-decoration-none"> Register Here</Link></p><hr />
-              <Form onSubmit={handleSubmit}>
+          <Grid item xs={12} md={7}>
+            <Typography variant="h4" color="warning.main" fontWeight="bold">
+              Patient Register
+            </Typography>
+            <Typography variant="body2" textAlign="right">
+              Are you a doctor? <Link href="/doctorreg">Register Here</Link>
+            </Typography>
 
-                <Row>
-                  <Col md={6}>
-                    <Form.Group className="form-floating mb-3">
-                      <Form.Control type="text" name="fullName" placeholder=""  value={user.username} 
-                  onChange={(e)=>setUser({...user, username:e.target.value})}></Form.Control>
-                      <Form.Label className="form-label">Enter Name</Form.Label>
-                    </Form.Group>
-                  </Col>
+            <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <TextField fullWidth label="Name" name="username" value={user.username} onChange={handleChange} required />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField fullWidth label="Email" name="email" type="email" value={user.email} onChange={handleChange} required />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField fullWidth label="Phone" name="phone" value={user.phone} onChange={handleChange} required />
+                </Grid>
+                <Grid item xs={12} sm={3}>
+                  <TextField fullWidth label="Age" name="age" type="number" value={user.age} onChange={handleChange} required />
+                </Grid>
+                <Grid item xs={12} sm={3}>
+                  <TextField fullWidth select label="Gender" name="gender" value={user.gender} onChange={handleChange} required>
+                    <MenuItem value="">Select</MenuItem>
+                    <MenuItem value="Male">Male</MenuItem>
+                    <MenuItem value="Female">Female</MenuItem>
+                    <MenuItem value="Other">Other</MenuItem>
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Password"
+                    name="password"
+                    type={show ? 'text' : 'password'}
+                    value={user.password}
+                    onChange={handleChange}
+                    required
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton onClick={() => setShow(!show)} edge="end">
+                            {show ? <VisibilityOff /> : <Visibility />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    fullWidth
+                    label="Confirm Password"
+                    name="cpassword"
+                    type={show ? 'text' : 'password'}
+                    value={user.cpassword}
+                    onChange={handleChange}
+                    required
+                  />
+                </Grid>
+              </Grid>
 
-                  <Col md={6}>
-                    <Form.Group className="form-floating mb-3">
-                      <Form.Control type="email" name="email" placeholder=""  value={user.email} 
-                  onChange={(e)=>setUser({...user, email:e.target.value})}></Form.Control>
-                      <Form.Label className="form-label">Enter Email</Form.Label>
-                    </Form.Group>
-                  </Col>
-                </Row>
-
-                <Row>
-                    <Col md={5}>
-                    <Form.Group className="form-floating mb-3">
-                        <Form.Control type="phone" name="phone" placeholder="" value={user.phone} 
-                  onChange={(e)=>setUser({...user, phone:e.target.value})}></Form.Control>
-                        <Form.Label className="form-label">Enter Phone Number</Form.Label>
-                    </Form.Group>
-                    </Col>
-
-                    <Col md={3}>
-                    <Form.Group className="form-floating mb-3">
-                        <Form.Control type="text" name="age" placeholder=""  value={user.age} 
-                  onChange={(e)=>setUser({...user, age:e.target.value})}></Form.Control>
-                        <Form.Label className="form-label">Enter Age</Form.Label>
-                    </Form.Group>
-                    </Col>
-                    <Col md={4}>
-
-                    <Form.Group className=" mb-3">
-                        <Form.Select name="gender" style={{height:'57px'}} value={user.gender} onChange={(e)=>setUser({...user, gender:e.target.value})}>
-                                <option value="">Select Gender</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
-                        </Form.Select>
-                    </Form.Group>
-                    </Col>
-                </Row>
-
-                <Row>
-                    <Col md={6}>
-                    <Form.Group className='mb-3'>
-                        <InputGroup>
-                            <Form.Control type={`${show ? "text" : "password" }`} name="password" placeholder="Create Password"  style={{height:'55px'}} value={user.password} onChange={(e)=>setUser({...user, password:e.target.value})}></Form.Control>
-                            <Button variant='light' className='border'  onClick={()=>setShow(!show)}> {show ? <BsEye/> :  <BsEyeSlash/>}</Button>
-                        </InputGroup>
-                     </Form.Group>
-                    </Col>
-            
-                    <Col md={6}>
-                    <Form.Group className='mb-3'>
-                        <InputGroup>
-                            <Form.Control type={`${show ? "text" : "password" }`} name="password" placeholder="Confirm Password" style={{height:'55px'}} value={user.cpassword} onChange={(e)=>setUser({...user, cpassword:e.target.value})}></Form.Control>
-                            <Button variant='light' className='border' onClick={()=>setShow(!show)}> {show ? <BsEye/> :  <BsEyeSlash/>}</Button>
-                        </InputGroup>
-                    </Form.Group>
-                    </Col>
-                </Row>
-                <Button variant="warning" type="submit" style={{ width: '100%', fontSize: '16px', fontWeight: 'bold', color: 'black' }}>
+              <Button type="submit" variant="contained" fullWidth sx={{ mt: 3, bgcolor: '#FFF04B', color: 'black', fontWeight: 'bold', '&:hover': { bgcolor: '#FFD700' } }}>
                 Register
               </Button>
-                              <p className="text-md-center mt-3" style={{ textAlign:"right" , fontSize:"13px"}}>Already have an account?<Link to="/Login"  className="text-decoration-none"> Log In</Link></p>
-              
-              </Form>
-            </Col>
-          </Row>
-        
-        </Card>
-      </Container>
-    </>
+
+              <Typography variant="body2" textAlign="center" mt={2}>
+                Already have an account? <Link href="/Login">Log In</Link>
+              </Typography>
+            </Box>
+          </Grid>
+        </Grid>
+      </Card>
+    </Container>
   );
 };
 
 export default Register;
+
