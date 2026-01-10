@@ -90,85 +90,132 @@ const UserPrescription = () => {
   };
 
   return (
-    <div className="container mt-4">
-      <h2 className="text-center mb-4" style={{ color: "#0056b3" }}>My Prescriptions</h2>
+    <div style={{ backgroundColor: "#f8f9fa", minHeight: "100vh", padding: "40px 20px" }}>
+      <div className="container" style={{ maxWidth: "1200px" }}>
+        <div className="text-center mb-5">
+          <h2 className="fw-bold" style={{ 
+            color: "#2c3e50",
+            fontSize: "2.5rem"
+          }}>
+            My Prescriptions
+          </h2>
+          <p className="text-muted">View and download your medical reports</p>
+        </div>
 
-      {/* Search Form */}
-      <div className="mb-4">
-        <Form>
-          <Form.Group controlId="doctorName">
-            <Form.Label>Search by Doctor Name</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Enter doctor's name"
-              value={doctorName}
-              style={{ width: "260px", marginBottom: "10px" }}
-              onChange={(e) => setDoctorName(e.target.value)}
-            />
-          </Form.Group>
-          <Button variant="primary" onClick={handleSearch}>
-            Search
-          </Button>
-        </Form>
-      </div>
+        {/* Search Form */}
+        <Card className="mb-4 border-0 shadow-sm" style={{ borderRadius: "15px" }}>
+          <Card.Body className="p-4">
+            <Form>
+              <div className="row align-items-end">
+                <div className="col-md-9">
+                  <Form.Group controlId="doctorName">
+                    <Form.Label style={{ fontWeight: "600", color: "#2c3e50" }}>Search by Doctor Name</Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="Enter doctor's name..."
+                      value={doctorName}
+                      onChange={(e) => setDoctorName(e.target.value)}
+                      style={{
+                        padding: "12px",
+                        borderRadius: "10px",
+                        border: "2px solid #e9ecef",
+                        fontSize: "15px"
+                      }}
+                    />
+                  </Form.Group>
+                </div>
+                <div className="col-md-3">
+                  <Button 
+                    variant="primary" 
+                    onClick={handleSearch}
+                    className="w-100"
+                    style={{
+                      padding: "12px",
+                      borderRadius: "10px",
+                      fontWeight: "600",
+                      border: "none"
+                    }}
+                  >
+                    Search
+                  </Button>
+                </div>
+              </div>
+            </Form>
+          </Card.Body>
+        </Card>
 
-      {filteredPrescriptions.length === 0 ? (
-        <h4 className="text-center mt-4">No Medical Reports Found</h4>
-      ) : (
-        filteredPrescriptions.map((prescription, index) => (
-          <Card key={index} className="p-4 mb-4 shadow-lg rounded">
-            <Table bordered hover responsive>
-              <tbody>
-                <tr>
-                  <td><strong>Doctor Name:</strong></td>
-                  <td>Dr. {prescription.doctorName}</td>
-                </tr>
-                <tr>
-                  <td><strong>Appointment Date:</strong></td>
-                  <td>{moment(prescription.appointmentDate).format("DD-MM-YYYY")}</td>
-                </tr>
-                <tr>
-                  <td><strong>Appointment Time:</strong></td>
-                  <td>{prescription.appointmentTime}</td>
-                </tr>
-                <tr>
-                  <td><strong>Description:</strong></td>
-                  <td>{prescription.description || "N/A"}</td>
-                </tr>
-                <tr>
-                  <td><strong>Next Appointment Date:</strong></td>
-                  <td>{prescription.nextAppointmentDate ? moment(prescription.nextAppointmentDate).format("DD-MM-YYYY") : "Not Scheduled"}</td>
-                </tr>
-              </tbody>
-            </Table>
-
-            <h5>Medicines</h5>
-            <Table bordered hover responsive>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Dosage</th>
-                  <th>Meal Timing</th>
-                </tr>
-              </thead>
-              <tbody>
-                {prescription.medicines.map((medicine, idx) => (
-                  <tr key={idx}>
-                    <td>{medicine.name}</td>
-                    <td>{medicine.dosage}</td>
-                    <td>{medicine.mealTiming}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-
-            {/* PDF Button */}
-            <Button variant="danger" onClick={() => generatePDF(prescription)} style={{ width: "100%", marginTop: "10px" }}>
-              Download as PDF
-            </Button>
+        {filteredPrescriptions.length === 0 ? (
+          <Card className="text-center border-0 shadow-sm" style={{ borderRadius: "15px", padding: "60px 20px" }}>
+            <h4 className="text-muted">No Medical Reports Found</h4>
+            <p className="text-muted">Your prescriptions will appear here once available</p>
           </Card>
-        ))
-      )}
+        ) : (
+          filteredPrescriptions.map((prescription, index) => (
+            <Card key={index} className="mb-4 border-0 shadow-sm" style={{ borderRadius: "15px", overflow: "hidden" }}>
+              <div style={{ 
+                background: "linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%)",
+                padding: "20px",
+                color: "white"
+              }}>
+                <h5 className="fw-bold mb-0">Dr. {prescription.doctorName}</h5>
+                <small>{moment(prescription.appointmentDate).format("DD MMMM YYYY")} at {prescription.appointmentTime}</small>
+              </div>
+              
+              <Card.Body className="p-4">
+                <Table borderless responsive>
+                  <tbody>
+                    <tr>
+                      <td style={{ width: "200px", fontWeight: "600", color: "#2c3e50" }}>Description:</td>
+                      <td style={{ color: "#6c757d" }}>{prescription.description || "N/A"}</td>
+                    </tr>
+                    <tr>
+                      <td style={{ fontWeight: "600", color: "#2c3e50" }}>Next Appointment:</td>
+                      <td style={{ color: "#6c757d" }}>
+                        {prescription.nextAppointmentDate ? moment(prescription.nextAppointmentDate).format("DD MMMM YYYY") : "Not Scheduled"}
+                      </td>
+                    </tr>
+                  </tbody>
+                </Table>
+
+                <h6 className="fw-bold mt-4 mb-3" style={{ color: "#2c3e50" }}>Prescribed Medicines</h6>
+                <Table bordered hover responsive style={{ borderRadius: "10px", overflow: "hidden" }}>
+                  <thead style={{ backgroundColor: "#f8f9fa" }}>
+                    <tr>
+                      <th style={{ fontWeight: "600", color: "#2c3e50" }}>Medicine Name</th>
+                      <th style={{ fontWeight: "600", color: "#2c3e50" }}>Dosage</th>
+                      <th style={{ fontWeight: "600", color: "#2c3e50" }}>Meal Timing</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {prescription.medicines.map((medicine, idx) => (
+                      <tr key={idx}>
+                        <td>{medicine.name}</td>
+                        <td>{medicine.dosage}</td>
+                        <td>{medicine.mealTiming}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+
+                <div className="text-end mt-4">
+                  <Button 
+                    variant="primary" 
+                    onClick={() => generatePDF(prescription)}
+                    style={{
+                      padding: "12px 30px",
+                      borderRadius: "10px",
+                      fontWeight: "600",
+                      border: "none"
+                    }}
+                  >
+                    📥 Download PDF
+                  </Button>
+                </div>
+              </Card.Body>
+            </Card>
+          ))
+        )}
+      </div>
     </div>
   );
 };

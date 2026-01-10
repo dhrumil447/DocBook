@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Button, Table, Form } from "react-bootstrap";
+import { Button, Table, Form, Card } from "react-bootstrap";
+import { FaStar, FaUserMd, FaUser, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { MdRateReview } from 'react-icons/md';
 
 const AdminReview = () => {
   const [reviews, setReviews] = useState([]);
@@ -64,67 +66,193 @@ const AdminReview = () => {
 
   return (
     <div className="container mt-4">
-      <h3>Admin Review Management</h3>
+      <div style={{
+        background: 'linear-gradient(135deg, #6f42c1, #9d7bd8)',
+        padding: '25px',
+        borderRadius: '15px',
+        marginBottom: '30px',
+        boxShadow: '0 4px 15px rgba(111, 66, 193, 0.2)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div style={{
+            width: '60px',
+            height: '60px',
+            borderRadius: '50%',
+            background: 'rgba(255, 255, 255, 0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backdropFilter: 'blur(10px)'
+          }}>
+            <MdRateReview style={{ fontSize: '28px', color: 'white' }} />
+          </div>
+          <h3 style={{ margin: 0, color: 'white', fontWeight: '700' }}>Review Management</h3>
+        </div>
+      </div>
 
-      {/* Filter Dropdown */}
-      <Form.Group className="mb-3">
-        <Form.Label>Filter Reviews:</Form.Label>
-        <Form.Select onChange={(e) => setFilterStatus(e.target.value)}>
-          <option value="All">All</option>
-          <option value="Pending">Pending</option>
-          <option value="Approved">Approved</option>
-          <option value="Canceled">Canceled</option>
-        </Form.Select>
-      </Form.Group>
+      <Card className="p-4" style={{ border: 'none', boxShadow: '0 2px 10px rgba(0,0,0,0.08)', borderRadius: '15px' }}>
+        <Form.Group className="mb-4">
+          <Form.Label style={{ fontWeight: '600', color: '#2c3e50', marginBottom: '10px' }}>Filter Reviews:</Form.Label>
+          <Form.Select
+            onChange={(e) => setFilterStatus(e.target.value)}
+            style={{ borderRadius: '10px', border: '2px solid #e9ecef', padding: '10px' }}
+          >
+            <option value="All">All Reviews</option>
+            <option value="Pending">Pending Reviews</option>
+            <option value="Approved">Approved Reviews</option>
+            <option value="Canceled">Canceled Reviews</option>
+          </Form.Select>
+        </Form.Group>
 
-      {/* Review Table */}
-      <Table striped bordered hover>
-        <thead>
-          <tr>
-            <th>Doctor Name</th>
-            <th>Patient Name</th>
-            <th>Rating</th>
-            <th>Review</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {reviews
-            .filter((review) => filterStatus === "All" || review.status === filterStatus)
-            .map((review) => (
-              <tr key={review.id}>
-                <td>{getDoctorName(review.doctorId)}</td>
-                <td>{getPatientName(review.patientId)}</td>
-                <td>{review.rating} ⭐</td>
-                <td>{review.comment}</td>
-                <td>{review.status}</td>
-                <td>
-                  {review.status === "Pending" && (
-                    <>
-                      <Button variant="success" size="sm" onClick={() => handleUpdateStatus(review.id, "Approved")}>
-                        Approve
-                      </Button>{" "}
-                      <Button variant="danger" size="sm" onClick={() => handleUpdateStatus(review.id, "Canceled")}>
-                        Cancel
-                      </Button>
-                    </>
-                  )}
-                  {review.status === "Approved" && (
-                    <Button variant="warning" size="sm" onClick={() => handleUpdateStatus(review.id, "Canceled")}>
-                      Cancel Approval
-                    </Button>
-                  )}
-                  {review.status === "Canceled" && (
-                    <Button variant="primary" size="sm" onClick={() => handleUpdateStatus(review.id, "Approved")}>
-                      Re-Approve
-                    </Button>
-                  )}
-                </td>
+        <div className="table-responsive">
+          <Table className="mb-0">
+            <thead>
+              <tr style={{ background: 'linear-gradient(135deg, #6f42c1, #9d7bd8)', color: 'white' }}>
+                <th style={{ padding: '15px', fontWeight: '600', border: 'none' }}>Doctor</th>
+                <th style={{ padding: '15px', fontWeight: '600', border: 'none' }}>Patient</th>
+                <th style={{ padding: '15px', fontWeight: '600', border: 'none' }}>Rating</th>
+                <th style={{ padding: '15px', fontWeight: '600', border: 'none' }}>Review</th>
+                <th style={{ padding: '15px', fontWeight: '600', border: 'none', textAlign: 'center' }}>Status</th>
+                <th style={{ padding: '15px', fontWeight: '600', border: 'none', textAlign: 'center' }}>Actions</th>
               </tr>
-            ))}
-        </tbody>
-      </Table>
+            </thead>
+            <tbody>
+              {reviews
+                .filter((review) => filterStatus === "All" || review.status === filterStatus)
+                .map((review) => (
+                  <tr key={review.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                    <td style={{ padding: '15px', verticalAlign: 'middle' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{
+                          width: '35px',
+                          height: '35px',
+                          borderRadius: '50%',
+                          background: 'linear-gradient(135deg, #6f42c1, #9d7bd8)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white'
+                        }}>
+                          <FaUserMd style={{ fontSize: '14px' }} />
+                        </div>
+                        <span style={{ fontWeight: '600', color: '#2c3e50' }}>{getDoctorName(review.doctorId)}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: '15px', verticalAlign: 'middle' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{
+                          width: '35px',
+                          height: '35px',
+                          borderRadius: '50%',
+                          background: 'linear-gradient(135deg, #0dcaf0, #0d6efd)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white'
+                        }}>
+                          <FaUser style={{ fontSize: '14px' }} />
+                        </div>
+                        <span style={{ color: '#495057' }}>{getPatientName(review.patientId)}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: '15px', verticalAlign: 'middle' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <span style={{ fontWeight: '700', fontSize: '16px', color: '#ffc107' }}>{review.rating}</span>
+                        <FaStar style={{ color: '#ffc107', fontSize: '16px' }} />
+                      </div>
+                    </td>
+                    <td style={{ padding: '15px', verticalAlign: 'middle', color: '#495057', maxWidth: '300px' }}>{review.comment}</td>
+                    <td style={{ padding: '15px', verticalAlign: 'middle', textAlign: 'center' }}>
+                      <span style={{
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        background: review.status === "Approved" ? 'linear-gradient(135deg, #198754, #20c997)' :
+                                    review.status === "Canceled" ? 'linear-gradient(135deg, #dc3545, #c82333)' :
+                                    'linear-gradient(135deg, #ffc107, #fd7e14)',
+                        color: 'white',
+                        display: 'inline-block'
+                      }}>
+                        {review.status}
+                      </span>
+                    </td>
+                    <td style={{ padding: '15px', verticalAlign: 'middle', textAlign: 'center' }}>
+                      {review.status === "Pending" && (
+                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                          <Button
+                            size="sm"
+                            onClick={() => handleUpdateStatus(review.id, "Approved")}
+                            style={{
+                              background: 'linear-gradient(135deg, #198754, #20c997)',
+                              border: 'none',
+                              borderRadius: '8px',
+                              padding: '6px 12px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '5px'
+                            }}
+                          >
+                            <FaCheckCircle /> Approve
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => handleUpdateStatus(review.id, "Canceled")}
+                            style={{
+                              background: 'linear-gradient(135deg, #dc3545, #c82333)',
+                              border: 'none',
+                              borderRadius: '8px',
+                              padding: '6px 12px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '5px'
+                            }}
+                          >
+                            <FaTimesCircle /> Cancel
+                          </Button>
+                        </div>
+                      )}
+                      {review.status === "Approved" && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleUpdateStatus(review.id, "Canceled")}
+                          style={{
+                            background: 'linear-gradient(135deg, #ffc107, #fd7e14)',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '6px 12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px'
+                          }}
+                        >
+                          <FaTimesCircle /> Cancel Approval
+                        </Button>
+                      )}
+                      {review.status === "Canceled" && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleUpdateStatus(review.id, "Approved")}
+                          style={{
+                            background: 'linear-gradient(135deg, #0dcaf0, #0d6efd)',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '6px 12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px'
+                          }}
+                        >
+                          <FaCheckCircle /> Re-Approve
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </Table>
+        </div>
+      </Card>
     </div>
   );
 };

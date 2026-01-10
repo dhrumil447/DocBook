@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { FaPenAlt, FaTrash, FaUserCheck, FaEye } from 'react-icons/fa';
+import { FaPenAlt, FaTrash, FaUserCheck, FaEye, FaUserMd } from 'react-icons/fa';
+import { MdManageAccounts } from 'react-icons/md';
 import { useNavigate } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectdoctors, store_doctors } from '../redux/doctorSlice';
@@ -84,73 +85,188 @@ const ViewDoctor = () => {
 
   return (
     <div className='mt-3'>
-      <h3 className='text-info'>View Doctor</h3>
-      <hr />
-      <div className="table-responsive">
-        <table className="table table-bordered table-striped table-hover">
-          <thead>
-            <tr>
-              <th>Sr. No</th>
-              <th>Name</th>
-              <th>Specialization</th>
-              <th>Fees</th>
-              <th>Clinic</th>
-              <th>Status</th>
-              <th>View Doctor Profile</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {doctors.length === 0 ? (
-              <tr>
-                <td colSpan={8} className='text-center'>No Doctor Found</td>
-              </tr>
-            ) : doctors.map((doctor, index) => (
-              <tr key={index}>
-                <td>{index + 1}</td>
-                <td>{doctor.username}</td>
-                <td>{doctor.specialization || 'N/A'}</td>
-                <td>₹{doctor.consultation_fee || 0}</td>
-                <td>{doctor.clinic_name || 'N/A'}</td>
-                <td>
-                  <span className={`badge ${doctor.status === "Accept" ? 'bg-success' : doctor.status === "Reject" ? 'bg-danger' : 'bg-warning text-dark'}`}>
-                    {doctor.status || 'Pending'}
-                  </span>
-                </td>
-                <td>
-                  <button
-                    className='btn btn-info me-2'
-                    onClick={() => handleViewProfile(doctor)}
-                  >
-                    <FaEye />
-                  </button>
-                  <button
-                    className='btn btn-success me-2'
-                    onClick={() => handleApprove(doctor.id)}
-                    disabled={doctor.status === "Accept"}
-                  >
-                    <FaUserCheck />
-                  </button>
-                </td>
-                <td>
-                  <button
-                    className='btn btn-success me-2'
-                    onClick={() => redirect(`/admin/doctor/edit/${doctor.id}`)}
-                  >
-                    <FaPenAlt />
-                  </button>
-                  <button
-                    className='btn btn-danger'
-                    onClick={() => handleDelete(doctor.id)}
-                  >
-                    <FaTrash />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <style>{`
+        .doctor-table-row {
+          transition: all 0.3s ease;
+        }
+        .doctor-table-row:hover {
+          background-color: #f8f9fa;
+        }
+      `}</style>
+
+      {/* Header Section */}
+      <div style={{
+        background: 'linear-gradient(135deg, #0d6efd, #0dcaf0)',
+        borderRadius: '20px',
+        padding: '30px',
+        marginBottom: '30px',
+        color: 'white',
+        boxShadow: '0 10px 30px rgba(13, 110, 253, 0.3)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '60px',
+            height: '60px',
+            borderRadius: '50%',
+            background: 'rgba(255, 255, 255, 0.2)',
+            backdropFilter: 'blur(10px)'
+          }}>
+            <MdManageAccounts style={{ fontSize: '30px' }} />
+          </div>
+          <div>
+            <h2 style={{ margin: '0', fontWeight: '700', fontSize: '28px' }}>Manage Doctors</h2>
+            <p style={{ margin: '5px 0 0 0', opacity: 0.9, fontSize: '15px' }}>View, approve, and manage doctor profiles</p>
+          </div>
+        </div>
       </div>
+
+      <Card style={{
+        border: 'none',
+        borderRadius: '15px',
+        overflow: 'hidden',
+        boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)'
+      }}>
+        <div className="table-responsive">
+          <table className="table table-hover mb-0" style={{ fontSize: '14px' }}>
+            <thead style={{
+              background: 'linear-gradient(135deg, #6f42c1, #9d7bd8)',
+              color: 'white'
+            }}>
+              <tr>
+                <th style={{ padding: '15px', fontWeight: '600', border: 'none' }}>Sr. No</th>
+                <th style={{ padding: '15px', fontWeight: '600', border: 'none' }}>Name</th>
+                <th style={{ padding: '15px', fontWeight: '600', border: 'none' }}>Specialization</th>
+                <th style={{ padding: '15px', fontWeight: '600', border: 'none' }}>Fees</th>
+                <th style={{ padding: '15px', fontWeight: '600', border: 'none' }}>Clinic</th>
+                <th style={{ padding: '15px', fontWeight: '600', border: 'none', textAlign: 'center' }}>Status</th>
+                <th style={{ padding: '15px', fontWeight: '600', border: 'none', textAlign: 'center' }}>View Profile</th>
+                <th style={{ padding: '15px', fontWeight: '600', border: 'none', textAlign: 'center' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {doctors.length === 0 ? (
+                <tr>
+                  <td colSpan={8} style={{ textAlign: 'center', padding: '40px', color: '#6c757d' }}>
+                    <FaUserMd style={{ fontSize: '40px', marginBottom: '10px', opacity: 0.5 }} />
+                    <p style={{ margin: 0 }}>No Doctor Found</p>
+                  </td>
+                </tr>
+              ) : doctors.map((doctor, index) => (
+                <tr key={index} className="doctor-table-row">
+                  <td style={{ padding: '15px', verticalAlign: 'middle', fontWeight: '600' }}>{index + 1}</td>
+                  <td style={{ padding: '15px', verticalAlign: 'middle' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #0d6efd, #0dcaf0)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white'
+                      }}>
+                        <FaUserMd style={{ fontSize: '18px' }} />
+                      </div>
+                      <span style={{ fontWeight: '600', color: '#2c3e50' }}>Dr. {doctor.username}</span>
+                    </div>
+                  </td>
+                  <td style={{ padding: '15px', verticalAlign: 'middle', color: '#495057' }}>{doctor.specialization || 'N/A'}</td>
+                  <td style={{ padding: '15px', verticalAlign: 'middle', color: '#495057', fontWeight: '600' }}>₹{doctor.consultation_fee || 0}</td>
+                  <td style={{ padding: '15px', verticalAlign: 'middle', color: '#495057' }}>{doctor.clinic_name || 'N/A'}</td>
+                  <td style={{ padding: '15px', verticalAlign: 'middle', textAlign: 'center' }}>
+                    <span style={{
+                      padding: '6px 12px',
+                      borderRadius: '20px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      background: doctor.status === "Accept" ? 'linear-gradient(135deg, #198754, #20c997)' : 
+                                  doctor.status === "Reject" ? 'linear-gradient(135deg, #dc3545, #c82333)' : 
+                                  'linear-gradient(135deg, #ffc107, #fd7e14)',
+                      color: 'white',
+                      display: 'inline-block'
+                    }}>
+                      {doctor.status || 'Pending'}
+                    </span>
+                  </td>
+                  <td style={{ padding: '15px', verticalAlign: 'middle', textAlign: 'center' }}>
+                    <button
+                      className='btn btn-sm me-2'
+                      onClick={() => handleViewProfile(doctor)}
+                      style={{
+                        background: 'linear-gradient(135deg, #0dcaf0, #0d6efd)',
+                        border: 'none',
+                        color: 'white',
+                        padding: '8px 12px',
+                        borderRadius: '8px',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
+                      onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+                    >
+                      <FaEye />
+                    </button>
+                    <button
+                      className='btn btn-sm'
+                      onClick={() => handleApprove(doctor.id)}
+                      disabled={doctor.status === "Accept"}
+                      style={{
+                        background: doctor.status === "Accept" ? '#6c757d' : 'linear-gradient(135deg, #198754, #20c997)',
+                        border: 'none',
+                        color: 'white',
+                        padding: '8px 12px',
+                        borderRadius: '8px',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseOver={(e) => { if (doctor.status !== "Accept") e.target.style.transform = 'translateY(-2px)'; }}
+                      onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+                    >
+                      <FaUserCheck />
+                    </button>
+                  </td>
+                  <td style={{ padding: '15px', verticalAlign: 'middle', textAlign: 'center' }}>
+                    <button
+                      className='btn btn-sm me-2'
+                      onClick={() => redirect(`/admin/doctor/edit/${doctor.id}`)}
+                      style={{
+                        background: 'linear-gradient(135deg, #198754, #20c997)',
+                        border: 'none',
+                        color: 'white',
+                        padding: '8px 12px',
+                        borderRadius: '8px',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
+                      onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+                    >
+                      <FaPenAlt />
+                    </button>
+                    <button
+                      className='btn btn-sm'
+                      onClick={() => handleDelete(doctor.id)}
+                      style={{
+                        background: 'linear-gradient(135deg, #dc3545, #c82333)',
+                        border: 'none',
+                        color: 'white',
+                        padding: '8px 12px',
+                        borderRadius: '8px',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
+                      onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+                    >
+                      <FaTrash />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
 
       {/* Doctor Profile Modal */}
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>

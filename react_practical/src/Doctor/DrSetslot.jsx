@@ -2,6 +2,8 @@ import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { Button, Container, Row, Col, Card, Form } from "react-bootstrap";
 import { toast } from "react-toastify";
+import { FaClock, FaCalendarAlt, FaSave, FaCheckCircle } from 'react-icons/fa';
+import { MdSchedule, MdEventAvailable } from 'react-icons/md';
 
 const DrSetslot = () => {
   const [selectedDates, setSelectedDates] = useState([]);
@@ -179,45 +181,187 @@ const DrSetslot = () => {
 
   return (
     <Container className="mt-4">
-    <Card className="p-4 shadow-sm border-0 rounded">
-      <h4 className="fw-bold text-center mb-4">Set Your Available Dates & Time Slots</h4>
+      <style>{`
+        .slot-button {
+          transition: all 0.3s ease;
+        }
+        .slot-button:hover {
+          transform: translateY(-2px);
+        }
+        .date-card {
+          transition: all 0.3s ease;
+        }
+        .date-card:hover {
+          transform: scale(1.02);
+        }
+      `}</style>
+
+      {/* Header Section */}
+      <div style={{
+        background: 'linear-gradient(135deg, #6f42c1, #9d7bd8)',
+        borderRadius: '20px',
+        padding: '30px',
+        marginBottom: '30px',
+        color: 'white',
+        boxShadow: '0 10px 30px rgba(111, 66, 193, 0.3)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '60px',
+            height: '60px',
+            borderRadius: '50%',
+            background: 'rgba(255, 255, 255, 0.2)',
+            backdropFilter: 'blur(10px)'
+          }}>
+            <MdSchedule style={{ fontSize: '30px' }} />
+          </div>
+          <div>
+            <h2 style={{ margin: '0', fontWeight: '700', fontSize: '28px' }}>Manage Availability</h2>
+            <p style={{ margin: '5px 0 0 0', opacity: 0.9, fontSize: '15px' }}>Set your available dates and time slots</p>
+          </div>
+        </div>
+      </div>
+
+    <Card style={{
+      border: 'none',
+      borderRadius: '20px',
+      padding: '30px',
+      boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)'
+    }}>
       
       <Row>
         {/* Date Picker & Selected Dates */}
         <Col md={4}>
-          <Form.Group>
-            <Form.Control type="date" onChange={addDate} className="mb-3 shadow-sm" />
-          </Form.Group>
-          <Card className="p-3 shadow-sm">
-            <h6 className="text-center fw-bold mb-2">Selected Dates</h6>
-            {selectedDates.length > 0 ? selectedDates.map((date) => (
-              <Button
-                key={date}
-                className={`mt-2 w-100 ${activeDate === date ? "btn-success" : "btn"}`}
-                onClick={() => setActiveDate(date)}
-              >
-                {date} ({dateSlots[date]?.day})
-              </Button>
-            )) : <p className="text-muted text-center">No dates selected</p>}
+          <div style={{
+            background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+            padding: '20px',
+            borderRadius: '15px',
+            marginBottom: '15px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+              <FaCalendarAlt style={{ color: '#6f42c1', fontSize: '20px' }} />
+              <h6 style={{ margin: 0, fontWeight: '600', color: '#2c3e50' }}>Select Date</h6>
+            </div>
+            <Form.Control 
+              type="date" 
+              onChange={addDate} 
+              style={{
+                padding: '12px',
+                borderRadius: '10px',
+                border: '2px solid #e0e0e0',
+                fontSize: '15px',
+                transition: 'all 0.3s ease'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#6f42c1'}
+              onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
+            />
+          </div>
+          
+          <Card style={{
+            border: 'none',
+            borderRadius: '15px',
+            overflow: 'hidden',
+            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.08)'
+          }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #0d6efd, #0dcaf0)',
+              padding: '12px',
+              textAlign: 'center'
+            }}>
+              <h6 style={{ color: 'white', fontWeight: '600', margin: 0 }}>
+                <MdEventAvailable style={{ marginRight: '8px' }} />
+                Selected Dates
+              </h6>
+            </div>
+            <div style={{ padding: '15px' }}>
+              {selectedDates.length > 0 ? selectedDates.map((date) => (
+                <Button
+                  key={date}
+                  className="date-card slot-button"
+                  style={{
+                    width: '100%',
+                    marginTop: '8px',
+                    padding: '12px',
+                    borderRadius: '10px',
+                    border: 'none',
+                    background: activeDate === date 
+                      ? 'linear-gradient(135deg, #198754, #20c997)' 
+                      : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                    color: activeDate === date ? 'white' : '#2c3e50',
+                    fontWeight: '600',
+                    fontSize: '14px',
+                    textAlign: 'left'
+                  }}
+                  onClick={() => setActiveDate(date)}
+                >
+                  <FaCalendarAlt style={{ marginRight: '8px' }} />
+                  {date}
+                  <div style={{ fontSize: '12px', marginTop: '4px', opacity: 0.8 }}>
+                    {dateSlots[date]?.day}
+                  </div>
+                </Button>
+              )) : (
+                <p style={{ textAlign: 'center', color: '#6c757d', padding: '20px 0', margin: 0 }}>
+                  No dates selected
+                </p>
+              )}
+            </div>
           </Card>
         </Col>
 
         {/* Time Slots */}
         <Col md={4}>
           {activeDate && (
-            <Card className="p-3 shadow-sm">
-              <h6 className="fw-bold text-center">Time Slots for {activeDate} ({dateSlots[activeDate]?.day})</h6>
-              <div className="d-flex flex-wrap justify-content-center">
-                {timeSlots.map((slot) => (
-                  <Button
-                    key={slot}
-                    className="m-1"
-                    variant={dateSlots[activeDate]?.slots?.includes(slot) ? "success" : "outline-dark"}
-                    onClick={() => toggleSlotSelection(activeDate, slot)}
-                  >
-                    {slot}
-                  </Button>
-                ))}
+            <Card style={{
+              border: 'none',
+              borderRadius: '15px',
+              overflow: 'hidden',
+              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.08)'
+            }}>
+              <div style={{
+                background: 'linear-gradient(135deg, #6f42c1, #9d7bd8)',
+                padding: '15px',
+                textAlign: 'center',
+                color: 'white'
+              }}>
+                <FaClock style={{ fontSize: '24px', marginBottom: '8px' }} />
+                <h6 style={{ fontWeight: '600', margin: '5px 0 0 0' }}>
+                  Time Slots for {activeDate}
+                </h6>
+                <p style={{ fontSize: '13px', margin: '5px 0 0 0', opacity: 0.9 }}>
+                  {dateSlots[activeDate]?.day}
+                </p>
+              </div>
+              <div style={{ padding: '20px' }}>
+                <div className="d-flex flex-wrap justify-content-center">
+                  {timeSlots.map((slot) => (
+                    <Button
+                      key={slot}
+                      className="slot-button"
+                      style={{
+                        margin: '5px',
+                        padding: '10px 15px',
+                        borderRadius: '10px',
+                        border: 'none',
+                        background: dateSlots[activeDate]?.slots?.includes(slot) 
+                          ? 'linear-gradient(135deg, #198754, #20c997)' 
+                          : 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                        color: dateSlots[activeDate]?.slots?.includes(slot) ? 'white' : '#2c3e50',
+                        fontWeight: '600',
+                        fontSize: '13px'
+                      }}
+                      onClick={() => toggleSlotSelection(activeDate, slot)}
+                    >
+                      {dateSlots[activeDate]?.slots?.includes(slot) && (
+                        <FaCheckCircle style={{ marginRight: '6px', fontSize: '12px' }} />
+                      )}
+                      {slot}
+                    </Button>
+                  ))}
+                </div>
               </div>
             </Card>
           )}
@@ -225,21 +369,99 @@ const DrSetslot = () => {
 
         {/* Selected Schedule */}
         <Col md={4}>
-          <Card className="p-3 shadow-sm">
-            <h6 className="fw-bold text-center">Selected Schedule</h6>
-            {selectedDates.length > 0 ? selectedDates.map((date) => (
-              <div key={date} className="mb-2">
-                <strong>{date} ({dateSlots[date]?.day}):</strong>
-                <p className="mb-0 text-muted">{dateSlots[date]?.slots?.length > 0 ? dateSlots[date].slots.join(", ") : "No slots selected"}</p>
-              </div>
-            )) : <p className="text-muted text-center">No schedule set</p>}
+          <Card style={{
+            border: 'none',
+            borderRadius: '15px',
+            overflow: 'hidden',
+            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.08)'
+          }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #fd7e14, #ffc107)',
+              padding: '12px',
+              textAlign: 'center'
+            }}>
+              <h6 style={{ color: 'white', fontWeight: '600', margin: 0 }}>
+                <FaCalendarAlt style={{ marginRight: '8px' }} />
+                Your Schedule
+              </h6>
+            </div>
+            <div style={{ padding: '15px', maxHeight: '500px', overflowY: 'auto' }}>
+              {selectedDates.length > 0 ? selectedDates.map((date) => (
+                <div key={date} style={{
+                  marginBottom: '15px',
+                  padding: '15px',
+                  background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                  borderRadius: '12px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <FaCalendarAlt style={{ color: '#fd7e14', fontSize: '16px' }} />
+                    <strong style={{ color: '#2c3e50', fontSize: '14px' }}>{date}</strong>
+                  </div>
+                  <p style={{ 
+                    fontSize: '12px', 
+                    color: '#6c757d', 
+                    marginBottom: '8px',
+                    fontWeight: '600'
+                  }}>
+                    {dateSlots[date]?.day}
+                  </p>
+                  <div style={{ fontSize: '13px', color: '#495057' }}>
+                    {dateSlots[date]?.slots?.length > 0 ? (
+                      dateSlots[date].slots.map((slot, idx) => (
+                        <div key={idx} style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '6px 0',
+                          borderBottom: idx < dateSlots[date].slots.length - 1 ? '1px solid #dee2e6' : 'none'
+                        }}>
+                          <FaClock style={{ color: '#6f42c1', fontSize: '12px' }} />
+                          {slot}
+                        </div>
+                      ))
+                    ) : (
+                      <p style={{ color: '#dc3545', fontSize: '13px', margin: 0 }}>No slots selected</p>
+                    )}
+                  </div>
+                </div>
+              )) : (
+                <p style={{ textAlign: 'center', color: '#6c757d', padding: '20px 0', margin: 0 }}>
+                  No schedule set
+                </p>
+              )}
+            </div>
           </Card>
         </Col>
       </Row>
 
       {/* Save Button */}
       <div className="text-center mt-4">
-        <Button variant="primary" size="lg" onClick={saveSlots} className="shadow-sm">
+        <Button 
+          size="lg" 
+          onClick={saveSlots}
+          style={{
+            background: 'linear-gradient(135deg, #198754, #20c997)',
+            border: 'none',
+            padding: '15px 40px',
+            borderRadius: '12px',
+            fontWeight: '700',
+            fontSize: '16px',
+            boxShadow: '0 6px 20px rgba(25, 135, 84, 0.3)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '10px',
+            transition: 'all 0.3s ease'
+          }}
+          onMouseOver={(e) => {
+            e.target.style.transform = 'translateY(-2px)';
+            e.target.style.boxShadow = '0 8px 25px rgba(25, 135, 84, 0.4)';
+          }}
+          onMouseOut={(e) => {
+            e.target.style.transform = 'translateY(0)';
+            e.target.style.boxShadow = '0 6px 20px rgba(25, 135, 84, 0.3)';
+          }}
+        >
+          <FaSave style={{ fontSize: '18px' }} />
           {existingSlotsId ? "Update Slots" : "Save Slots"}
         </Button>
       </div>

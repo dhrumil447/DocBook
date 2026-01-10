@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Card, Col, Container, Row } from "react-bootstrap";
 import { FaUserMd, FaUsers, FaMoneyBillWave, FaStar, FaClipboardList, FaCashRegister } from "react-icons/fa";
+import { MdDashboard } from 'react-icons/md';
 
 const AdminDashboard = () => {
   const [totalDoctors, setTotalDoctors] = useState(0);
@@ -100,78 +101,270 @@ const AdminDashboard = () => {
 
   return (
     <Container className="mt-4">
-      <h3 className="mb-4">Admin Dashboard</h3>
+      <style>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .stat-card {
+          animation: fadeInUp 0.6s ease-out;
+          transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+          transform: translateY(-5px);
+        }
+      `}</style>
+
+      {/* Header Section */}
+      <div style={{
+        background: 'linear-gradient(135deg, #6f42c1, #9d7bd8)',
+        borderRadius: '20px',
+        padding: '30px',
+        marginBottom: '30px',
+        color: 'white',
+        boxShadow: '0 10px 30px rgba(111, 66, 193, 0.3)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '60px',
+            height: '60px',
+            borderRadius: '50%',
+            background: 'rgba(255, 255, 255, 0.2)',
+            backdropFilter: 'blur(10px)'
+          }}>
+            <MdDashboard style={{ fontSize: '30px' }} />
+          </div>
+          <div>
+            <h2 style={{ margin: '0', fontWeight: '700', fontSize: '28px' }}>Admin Dashboard</h2>
+            <p style={{ margin: '5px 0 0 0', opacity: 0.9, fontSize: '15px' }}>System overview and statistics</p>
+          </div>
+        </div>
+      </div>
+
       <Row>
-        <Col md={4}>
-          <Card className="shadow-lg p-3">
-            <Card.Body className="d-flex align-items-center">
-              <FaUserMd size={40} className="text-primary me-3" />
-              <div>
-                <h5>Total Doctors</h5>
-                <h3>{totalDoctors}</h3>
+        <Col md={4} className="mb-4">
+          <Card className="stat-card" style={{
+            border: 'none',
+            borderRadius: '15px',
+            overflow: 'hidden',
+            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #0d6efd, #0dcaf0)',
+              padding: '20px',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                background: 'rgba(255, 255, 255, 0.3)',
+                backdropFilter: 'blur(10px)',
+                marginBottom: '10px'
+              }}>
+                <FaUserMd style={{ fontSize: '28px', color: 'white' }} />
               </div>
+            </div>
+            <Card.Body style={{ textAlign: 'center', padding: '20px' }}>
+              <Card.Title style={{ color: '#6c757d', fontSize: '14px', fontWeight: '600', marginBottom: '10px' }}>
+                Total Doctors
+              </Card.Title>
+              <Card.Text style={{ fontSize: '32px', fontWeight: '700', color: '#0d6efd', margin: '0' }}>
+                {totalDoctors}
+              </Card.Text>
             </Card.Body>
           </Card>
         </Col>
 
-        <Col md={4}>
-          <Card className="shadow-lg p-3">
-            <Card.Body className="d-flex align-items-center">
-              <FaUsers size={40} className="text-success me-3" />
-              <div>
-                <h5>Total Patients</h5>
-                <h3>{totalPatients}</h3>
+        <Col md={4} className="mb-4">
+          <Card className="stat-card" style={{
+            border: 'none',
+            borderRadius: '15px',
+            overflow: 'hidden',
+            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #198754, #20c997)',
+              padding: '20px',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                background: 'rgba(255, 255, 255, 0.3)',
+                backdropFilter: 'blur(10px)',
+                marginBottom: '10px'
+              }}>
+                <FaUsers style={{ fontSize: '28px', color: 'white' }} />
               </div>
+            </div>
+            <Card.Body style={{ textAlign: 'center', padding: '20px' }}>
+              <Card.Title style={{ color: '#6c757d', fontSize: '14px', fontWeight: '600', marginBottom: '10px' }}>
+                Total Patients
+              </Card.Title>
+              <Card.Text style={{ fontSize: '32px', fontWeight: '700', color: '#198754', margin: '0' }}>
+                {totalPatients}
+              </Card.Text>
             </Card.Body>
           </Card>
         </Col>
 
-        <Col md={4}>
-          <Card className="shadow-lg p-3">
-            <Card.Body className="d-flex align-items-center">
-              <FaMoneyBillWave size={40} className="text-warning me-3" />
-              <div>
-                <h5>Total Online Payments</h5>
-                <h3>₹{totalOnlinePayments}</h3>
+        <Col md={4} className="mb-4">
+          <Card className="stat-card" style={{
+            border: 'none',
+            borderRadius: '15px',
+            overflow: 'hidden',
+            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #ffc107, #fd7e14)',
+              padding: '20px',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                background: 'rgba(255, 255, 255, 0.3)',
+                backdropFilter: 'blur(10px)',
+                marginBottom: '10px'
+              }}>
+                <FaMoneyBillWave style={{ fontSize: '28px', color: 'white' }} />
               </div>
+            </div>
+            <Card.Body style={{ textAlign: 'center', padding: '20px' }}>
+              <Card.Title style={{ color: '#6c757d', fontSize: '14px', fontWeight: '600', marginBottom: '10px' }}>
+                Total Online Payments
+              </Card.Title>
+              <Card.Text style={{ fontSize: '32px', fontWeight: '700', color: '#ffc107', margin: '0' }}>
+                ₹{totalOnlinePayments}
+              </Card.Text>
             </Card.Body>
           </Card>
         </Col>
       </Row>
 
       <Row className="mt-4">
-        <Col md={4}>
-          <Card className="shadow-lg p-3">
-            <Card.Body className="d-flex align-items-center">
-              <FaCashRegister size={40} className="text-danger me-3" />
-              <div>
-                <h5>Total COD Payments</h5>
-                <h3>₹{totalCODPayments}</h3>
+        <Col md={4} className="mb-4">
+          <Card className="stat-card" style={{
+            border: 'none',
+            borderRadius: '15px',
+            overflow: 'hidden',
+            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #dc3545, #c82333)',
+              padding: '20px',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                background: 'rgba(255, 255, 255, 0.3)',
+                backdropFilter: 'blur(10px)',
+                marginBottom: '10px'
+              }}>
+                <FaCashRegister style={{ fontSize: '28px', color: 'white' }} />
               </div>
+            </div>
+            <Card.Body style={{ textAlign: 'center', padding: '20px' }}>
+              <Card.Title style={{ color: '#6c757d', fontSize: '14px', fontWeight: '600', marginBottom: '10px' }}>
+                Total COD Payments
+              </Card.Title>
+              <Card.Text style={{ fontSize: '32px', fontWeight: '700', color: '#dc3545', margin: '0' }}>
+                ₹{totalCODPayments}
+              </Card.Text>
             </Card.Body>
           </Card>
         </Col>
 
-        <Col md={4}>
-          <Card className="shadow-lg p-3">
-            <Card.Body className="d-flex align-items-center">
-              <FaClipboardList size={40} className="text-info me-3" />
-              <div>
-                <h5>Most Appointments</h5>
-                <h6>{topDoctor ? `Dr. ${topDoctor.username}` : "No data"}</h6>
+        <Col md={4} className="mb-4">
+          <Card className="stat-card" style={{
+            border: 'none',
+            borderRadius: '15px',
+            overflow: 'hidden',
+            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #0dcaf0, #0d6efd)',
+              padding: '20px',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                background: 'rgba(255, 255, 255, 0.3)',
+                backdropFilter: 'blur(10px)',
+                marginBottom: '10px'
+              }}>
+                <FaClipboardList style={{ fontSize: '28px', color: 'white' }} />
               </div>
+            </div>
+            <Card.Body style={{ textAlign: 'center', padding: '20px' }}>
+              <Card.Title style={{ color: '#6c757d', fontSize: '14px', fontWeight: '600', marginBottom: '10px' }}>
+                Most Appointments
+              </Card.Title>
+              <Card.Text style={{ fontSize: '18px', fontWeight: '700', color: '#0dcaf0', margin: '0' }}>
+                {topDoctor ? `Dr. ${topDoctor.username}` : "No data"}
+              </Card.Text>
             </Card.Body>
           </Card>
         </Col>
 
-        <Col md={4}>
-          <Card className="shadow-lg p-3">
-            <Card.Body className="d-flex align-items-center">
-              <FaStar size={40} className="text-warning me-3" />
-              <div>
-                <h5>Highest Rated Doctor</h5>
-                <h6>{highestRatedDoctor ? `Dr. ${highestRatedDoctor.username} (${highestRatedDoctor.rating} ⭐)` : "No data"}</h6>
+        <Col md={4} className="mb-4">
+          <Card className="stat-card" style={{
+            border: 'none',
+            borderRadius: '15px',
+            overflow: 'hidden',
+            boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)'
+          }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #ffc107, #fd7e14)',
+              padding: '20px',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                background: 'rgba(255, 255, 255, 0.3)',
+                backdropFilter: 'blur(10px)',
+                marginBottom: '10px'
+              }}>
+                <FaStar style={{ fontSize: '28px', color: 'white' }} />
               </div>
+            </div>
+            <Card.Body style={{ textAlign: 'center', padding: '20px' }}>
+              <Card.Title style={{ color: '#6c757d', fontSize: '14px', fontWeight: '600', marginBottom: '10px' }}>
+                Highest Rated Doctor
+              </Card.Title>
+              <Card.Text style={{ fontSize: '16px', fontWeight: '700', color: '#ffc107', margin: '0' }}>
+                {highestRatedDoctor ? `Dr. ${highestRatedDoctor.username} (${highestRatedDoctor.rating} ⭐)` : "No data"}
+              </Card.Text>
             </Card.Body>
           </Card>
         </Col>

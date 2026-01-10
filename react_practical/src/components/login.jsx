@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Box, Container, Grid, Card, Typography, TextField, Button, Link, IconButton, InputAdornment } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { Visibility, VisibilityOff, LocalHospital, MedicalServices, HealthAndSafety, Favorite } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router';
 import { api } from '../utils/api';
@@ -59,73 +59,194 @@ const Login = () => {
   };
 
   return (
-    <Container maxWidth="md" sx={{ mt: 5, mb: 5 }}>
-      <Card sx={{ p: 3, boxShadow: 3, borderRadius: 2 }}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={5} display="flex" alignItems="center" justifyContent="center">
-            <Box component="video" autoPlay loop muted width="100%" height={300}>
-              <source src="https://res.cloudinary.com/dhrumil7/video/upload/v1743702698/log_jvllzo.mp4" type="video/mp4" />
-            </Box>
-          </Grid>
+    <Box sx={{ bgcolor: '#f8f9fa', minHeight: '100vh', display: 'flex', alignItems: 'center', py: 5 }}>
+      <Container maxWidth="lg">
+        <Card sx={{ 
+          borderRadius: 4, 
+          boxShadow: '0 8px 30px rgba(0, 0, 0, 0.12)',
+          overflow: 'hidden',
+          border: 'none'
+        }}>
+          <Grid container>
+            <Grid 
+              item 
+              xs={12} 
+              md={5} 
+              sx={{ 
+                bgcolor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: 'linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                p: 4,
+                position: 'relative',
+                overflow: 'hidden'
+              }}
+            >
+              <Box sx={{ textAlign: 'center', color: 'white', width: '100%', position: 'relative', zIndex: 2 }}>
+                {/* Floating Icons Background */}
+                <Box sx={{ position: 'absolute', top: 20, left: 20, opacity: 0.2 }}>
+                  <LocalHospital sx={{ fontSize: 60 }} />
+                </Box>
+                <Box sx={{ position: 'absolute', bottom: 30, right: 30, opacity: 0.2 }}>
+                  <MedicalServices sx={{ fontSize: 50 }} />
+                </Box>
+                <Box sx={{ position: 'absolute', top: 100, right: 40, opacity: 0.2 }}>
+                  <HealthAndSafety sx={{ fontSize: 45 }} />
+                </Box>
+                <Box sx={{ position: 'absolute', bottom: 120, left: 40, opacity: 0.2 }}>
+                  <Favorite sx={{ fontSize: 40 }} />
+                </Box>
 
-          <Grid item xs={12} md={7}>
-            <Typography variant="h4" color="warning.main" fontWeight="bold" textAlign="center" gutterBottom>
-              Login Here
-            </Typography>
-            
-            <Box component="form" onSubmit={loginUser} sx={{ mt: 3 }}>
-              <TextField
-                fullWidth
-                label="Email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                margin="normal"
-              />
+                {/* Main Icon */}
+                <Box 
+                  sx={{ 
+                    width: 150,
+                    height: 150,
+                    borderRadius: '50%',
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(10px)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 30px',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                    animation: 'pulse 2s ease-in-out infinite',
+                    '@keyframes pulse': {
+                      '0%, 100%': {
+                        transform: 'scale(1)',
+                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                      },
+                      '50%': {
+                        transform: 'scale(1.05)',
+                        boxShadow: '0 12px 40px rgba(0, 0, 0, 0.2)',
+                      },
+                    }
+                  }}
+                >
+                  <LocalHospital sx={{ fontSize: 80, color: 'white' }} />
+                </Box>
 
-              <TextField
-                fullWidth
-                label="Password"
-                name="password"
-                type={show ? 'text' : 'password'}
-                value={formData.password}
-                onChange={handleChange}
-                required
-                margin="normal"
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton onClick={() => setShow(!show)} edge="end">
-                        {show ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
-
-              <Button type="submit" variant="contained" fullWidth sx={{ mt: 3, bgcolor: '#FFF04B', color: 'black', fontWeight: 'bold', '&:hover': { bgcolor: '#FFD700' } }}>
-                Login
-              </Button>
-
-              <Box textAlign="right" mt={2}>
-                <Typography variant="body2">
-                  Don't have an account? <Link href="/Register">Create a New Account</Link>
+                <Typography variant="h5" fontWeight="bold" mb={2}>
+                  Welcome Back!
                 </Typography>
-                <Typography variant="body2" mt={1}>
-                  <Link sx={{ cursor: 'pointer' }} onClick={() => setShowForgot(true)}>
-                    Forgot Password?
-                  </Link>
+                <Typography variant="body2" sx={{ opacity: 0.9, maxWidth: 280, mx: 'auto' }}>
+                  Log in to access your healthcare dashboard and manage your appointments
                 </Typography>
               </Box>
-            </Box>
-          </Grid>
-        </Grid>
-      </Card>
+            </Grid>
 
-      <ForgotPasswordModal show={showForgot} handleClose={() => setShowForgot(false)} />
-    </Container>
+            <Grid item xs={12} md={7} sx={{ p: 5 }}>
+              <Box sx={{ mb: 4 }}>
+                <Typography variant="h4" fontWeight="bold" sx={{ color: '#2c3e50', mb: 1 }}>
+                  Sign In
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#6c757d' }}>
+                  Enter your credentials to access your account
+                </Typography>
+              </Box>
+            
+              <Box component="form" onSubmit={loginUser}>
+                <TextField
+                  fullWidth
+                  label="Email Address"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  sx={{ 
+                    mb: 3,
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      '&:hover fieldset': {
+                        borderColor: '#0d6efd',
+                      },
+                    }
+                  }}
+                />
+
+                <TextField
+                  fullWidth
+                  label="Password"
+                  name="password"
+                  type={show ? 'text' : 'password'}
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  sx={{ 
+                    mb: 2,
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      '&:hover fieldset': {
+                        borderColor: '#0d6efd',
+                      },
+                    }
+                  }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setShow(!show)} edge="end">
+                          {show ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+
+                <Box textAlign="right" mb={3}>
+                  <Link 
+                    sx={{ 
+                      cursor: 'pointer',
+                      color: '#0d6efd',
+                      textDecoration: 'none',
+                      fontSize: '0.875rem',
+                      fontWeight: 600,
+                      '&:hover': {
+                        textDecoration: 'underline'
+                      }
+                    }} 
+                    onClick={() => setShowForgot(true)}
+                  >
+                    Forgot Password?
+                  </Link>
+                </Box>
+
+                <Button 
+                  type="submit" 
+                  variant="contained" 
+                  fullWidth 
+                  sx={{ 
+                    py: 1.5,
+                    bgcolor: '#0d6efd', 
+                    color: 'white', 
+                    fontWeight: 700,
+                    fontSize: '1rem',
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    boxShadow: '0 4px 12px rgba(13, 110, 253, 0.3)',
+                    '&:hover': { 
+                      bgcolor: '#0b5ed7',
+                      boxShadow: '0 6px 16px rgba(13, 110, 253, 0.4)',
+                      transform: 'translateY(-2px)',
+                      transition: 'all 0.3s ease'
+                    }
+                  }}
+                >
+                  Sign In
+                </Button>
+
+                <Typography variant="body2" textAlign="center" mt={3} sx={{ color: '#6c757d' }}>
+                  Don't have an account? <Link href="/Register" sx={{ color: '#0d6efd', textDecoration: 'none', fontWeight: 600 }}>Create Account</Link>
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
+        </Card>
+
+        <ForgotPasswordModal show={showForgot} handleClose={() => setShowForgot(false)} />
+      </Container>
+    </Box>
   );
 };
 

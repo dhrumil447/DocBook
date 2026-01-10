@@ -4,6 +4,8 @@ import { Card, Button, Table, Form } from "react-bootstrap";
 import { toast } from "react-toastify";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { FaCalendarAlt, FaSearch, FaFilePdf, FaUserMd, FaUser, FaTimes } from 'react-icons/fa';
+import { MdEventNote } from 'react-icons/md';
 
 const AdminViewAppointments = () => {
   const [appointments, setAppointments] = useState([]);
@@ -120,69 +122,189 @@ const AdminViewAppointments = () => {
 
   return (
     <div className="container mt-4">
-      <Card className="p-3" style={{ fontSize: "13px" }}>
-        <h4 className="text-center fw-bold">All Doctor Appointments (Admin View)</h4>
+      <div style={{
+        background: 'linear-gradient(135deg, #6f42c1, #9d7bd8)',
+        padding: '25px',
+        borderRadius: '15px',
+        marginBottom: '30px',
+        boxShadow: '0 4px 15px rgba(111, 66, 193, 0.2)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div style={{
+            width: '60px',
+            height: '60px',
+            borderRadius: '50%',
+            background: 'rgba(255, 255, 255, 0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backdropFilter: 'blur(10px)'
+          }}>
+            <FaCalendarAlt style={{ fontSize: '28px', color: 'white' }} />
+          </div>
+          <h3 style={{ margin: 0, color: 'white', fontWeight: '700' }}>Appointment Management</h3>
+        </div>
+      </div>
 
-        <div className="d-flex gap-2">
-          <Form.Control
-            type="text"
-            placeholder="Search by ID, Doctor Name, or Patient Name..."
-            className="mt-3 mb-3"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+      <Card className="p-4" style={{ border: 'none', boxShadow: '0 2px 10px rgba(0,0,0,0.08)', borderRadius: '15px' }}>
+        <div className="d-flex gap-2 mb-3">
+          <div style={{ position: 'relative', flex: 1 }}>
+            <FaSearch style={{ position: 'absolute', left: '15px', top: '50%', transform: 'translateY(-50%)', color: '#6c757d', zIndex: 1 }} />
+            <Form.Control
+              type="text"
+              placeholder="Search by ID, Doctor Name, or Patient Name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ paddingLeft: '40px', borderRadius: '10px', border: '2px solid #e9ecef' }}
+            />
+          </div>
           <Form.Control
             type="date"
-            className="mt-3 mb-3"
             value={searchDate}
             onChange={(e) => setSearchDate(e.target.value)}
+            style={{ borderRadius: '10px', border: '2px solid #e9ecef', maxWidth: '200px' }}
           />
-          <Button className="mt-3 mb-3" onClick={generatePDF} variant="success">Download PDF</Button>
+          <Button
+            onClick={generatePDF}
+            style={{
+              background: 'linear-gradient(135deg, #198754, #20c997)',
+              border: 'none',
+              borderRadius: '10px',
+              padding: '10px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontWeight: '600',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <FaFilePdf /> Download PDF
+          </Button>
         </div>
 
         {filteredAppointments.length > 0 ? (
-          <Table striped bordered hover className="mt-3">
-            <thead>
-              <tr>
-                <th>App.ID</th>
-                <th>Patient Name</th>
-                <th>Dr. Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Date</th>
-                <th>Time Slot</th>
-                <th>Payment Method/ID</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredAppointments.map((appt) => (
-                <tr key={appt.id}>
-                  <td>{appt.id}</td>
-                  <td>{appt.patientName}</td>
-                  <td>Dr. {appt.doctorName}</td>
-                  <td>{appt.patientEmail}</td>
-                  <td>{appt.patientPhone}</td>
-                  <td>{appt.date}</td>
-                  <td>{appt.slot}</td>
-                  <td>{appt.paymentMethod}<br/>{appt.razorpayId}</td>
-                  <td>{appt.status || "Pending"}</td>
-                  <td>
-                    {appt.status === "Canceled" ? (
-                      <Button variant="danger" disabled> Canceled </Button>
-                    ) : (
-                      <Button variant="danger" onClick={() => cancelAppointment(appt.id)}>
-                        Cancel
-                      </Button>
-                    )}
-                  </td>
+          <div className="table-responsive">
+            <Table className="mb-0">
+              <thead>
+                <tr style={{ background: 'linear-gradient(135deg, #6f42c1, #9d7bd8)', color: 'white' }}>
+                  <th style={{ padding: '15px', fontWeight: '600', border: 'none' }}>App.ID</th>
+                  <th style={{ padding: '15px', fontWeight: '600', border: 'none' }}>Patient</th>
+                  <th style={{ padding: '15px', fontWeight: '600', border: 'none' }}>Doctor</th>
+                  <th style={{ padding: '15px', fontWeight: '600', border: 'none' }}>Email</th>
+                  <th style={{ padding: '15px', fontWeight: '600', border: 'none' }}>Phone</th>
+                  <th style={{ padding: '15px', fontWeight: '600', border: 'none' }}>Date</th>
+                  <th style={{ padding: '15px', fontWeight: '600', border: 'none' }}>Time Slot</th>
+                  <th style={{ padding: '15px', fontWeight: '600', border: 'none' }}>Payment</th>
+                  <th style={{ padding: '15px', fontWeight: '600', border: 'none', textAlign: 'center' }}>Status</th>
+                  <th style={{ padding: '15px', fontWeight: '600', border: 'none', textAlign: 'center' }}>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
+              </thead>
+              <tbody>
+                {filteredAppointments.map((appt) => (
+                  <tr key={appt.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                    <td style={{ padding: '15px', verticalAlign: 'middle', fontWeight: '600', color: '#6f42c1' }}>#{appt.id}</td>
+                    <td style={{ padding: '15px', verticalAlign: 'middle' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{
+                          width: '35px',
+                          height: '35px',
+                          borderRadius: '50%',
+                          background: 'linear-gradient(135deg, #0dcaf0, #0d6efd)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white'
+                        }}>
+                          <FaUser style={{ fontSize: '14px' }} />
+                        </div>
+                        <span style={{ fontWeight: '600', color: '#2c3e50' }}>{appt.patientName}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: '15px', verticalAlign: 'middle' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{
+                          width: '35px',
+                          height: '35px',
+                          borderRadius: '50%',
+                          background: 'linear-gradient(135deg, #6f42c1, #9d7bd8)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white'
+                        }}>
+                          <FaUserMd style={{ fontSize: '14px' }} />
+                        </div>
+                        <span style={{ fontWeight: '600', color: '#2c3e50' }}>Dr. {appt.doctorName}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: '15px', verticalAlign: 'middle', color: '#495057', fontSize: '14px' }}>{appt.patientEmail}</td>
+                    <td style={{ padding: '15px', verticalAlign: 'middle', color: '#495057', fontSize: '14px' }}>{appt.patientPhone}</td>
+                    <td style={{ padding: '15px', verticalAlign: 'middle', color: '#495057', fontWeight: '500' }}>{appt.date}</td>
+                    <td style={{ padding: '15px', verticalAlign: 'middle', color: '#495057' }}>{appt.slot}</td>
+                    <td style={{ padding: '15px', verticalAlign: 'middle', fontSize: '13px' }}>
+                      <div style={{ fontWeight: '600', color: '#2c3e50' }}>{appt.paymentMethod}</div>
+                      <small style={{ color: '#6c757d' }}>{appt.razorpayId}</small>
+                    </td>
+                    <td style={{ padding: '15px', verticalAlign: 'middle', textAlign: 'center' }}>
+                      <span style={{
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        background: appt.status === "Canceled" ? 'linear-gradient(135deg, #dc3545, #c82333)' : 'linear-gradient(135deg, #198754, #20c997)',
+                        color: 'white',
+                        display: 'inline-block'
+                      }}>
+                        {appt.status || "Pending"}
+                      </span>
+                    </td>
+                    <td style={{ padding: '15px', verticalAlign: 'middle', textAlign: 'center' }}>
+                      {appt.status === "Canceled" ? (
+                        <Button
+                          disabled
+                          style={{
+                            background: '#6c757d',
+                            border: 'none',
+                            padding: '8px 16px',
+                            borderRadius: '8px',
+                            fontSize: '13px',
+                            fontWeight: '600'
+                          }}
+                        >
+                          Canceled
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={() => cancelAppointment(appt.id)}
+                          style={{
+                            background: 'linear-gradient(135deg, #dc3545, #c82333)',
+                            border: 'none',
+                            padding: '8px 16px',
+                            borderRadius: '8px',
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            transition: 'all 0.3s ease'
+                          }}
+                          onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                          onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                        >
+                          <FaTimes /> Cancel
+                        </Button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
         ) : (
-          <p className="text-center mt-3">No appointments found.</p>
+          <div style={{ textAlign: 'center', padding: '40px', color: '#6c757d' }}>
+            <MdEventNote style={{ fontSize: '50px', marginBottom: '15px', opacity: 0.5 }} />
+            <p style={{ margin: 0, fontSize: '16px' }}>No appointments found.</p>
+          </div>
         )}
       </Card>
     </div>

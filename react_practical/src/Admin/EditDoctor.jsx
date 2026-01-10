@@ -1,11 +1,13 @@
 import { Button } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
-import { Col, Container, Form, Row } from "react-bootstrap";
+import { Col, Container, Form, Row, Card } from "react-bootstrap";
 import { toast } from 'react-toastify';
 import { useNavigate, useParams } from "react-router";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { selectdoctors } from "../redux/doctorSlice";
+import { FaUserMd } from 'react-icons/fa';
+import { MdEdit } from 'react-icons/md';
 
 const EditDoctor = () => {
   const redirect = useNavigate();
@@ -95,15 +97,53 @@ const EditDoctor = () => {
 
   return (
     <Container className="mt-3">
-      <Row>
-        <Col md={12}>
-          <h3 className="text-info" style={{ textAlign: "left", fontWeight: "bold" }}>
-            Edit Doctor
-            <button type="button" onClick={() => redirect('/admin/view')} className="btn btn-info float-end">
-              View Doctor
-            </button>
-          </h3>
-          <hr />
+      <div style={{
+        background: 'linear-gradient(135deg, #6f42c1, #9d7bd8)',
+        padding: '25px',
+        borderRadius: '15px',
+        marginBottom: '30px',
+        boxShadow: '0 4px 15px rgba(111, 66, 193, 0.2)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <div style={{
+              width: '60px',
+              height: '60px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backdropFilter: 'blur(10px)'
+            }}>
+              <MdEdit style={{ fontSize: '28px', color: 'white' }} />
+            </div>
+            <h3 style={{ margin: 0, color: 'white', fontWeight: '700' }}>Edit Doctor Details</h3>
+          </div>
+          <button
+            type="button"
+            onClick={() => redirect('/admin/view')}
+            style={{
+              background: 'rgba(255, 255, 255, 0.2)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '10px',
+              padding: '10px 20px',
+              fontWeight: '600',
+              backdropFilter: 'blur(10px)',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseOver={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.3)'}
+            onMouseOut={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.2)'}
+          >
+            View Doctors
+          </button>
+        </div>
+      </div>
+      <Card style={{ border: 'none', boxShadow: '0 2px 10px rgba(0,0,0,0.08)', borderRadius: '15px', padding: '30px' }}>
+        <Row>
+          <Col md={12}>
           <Form onSubmit={handleSubmit}>
             <Row>
               <Col md={4}>
@@ -221,7 +261,20 @@ const EditDoctor = () => {
               </Col>
             </Row>
 
-            <Button type="submit" className="btn-info" style={{ width: '100%', fontSize: '16px', fontWeight: 'bold', color: 'black', border: 0 }}>
+            <Button
+              type="submit"
+              style={{
+                width: '100%',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                background: 'linear-gradient(135deg, #6f42c1, #9d7bd8)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '10px',
+                padding: '12px',
+                transition: 'all 0.3s ease'
+              }}
+            >
               {isLoading ? (
                 <div className="d-flex justify-content-center">
                   <div className="spinner-border" role="status"></div>
@@ -231,6 +284,7 @@ const EditDoctor = () => {
           </Form>
         </Col>
       </Row>
+      </Card>
     </Container>
   );
 };
