@@ -27,6 +27,8 @@ const Doctorreg = () => {
     qualification: '',
     experience: '',
     fees: '',
+    availableDays: '',
+    availableTime: '',
     profileimg:'',
     identityproof:'',
     degreeProof:'',
@@ -37,7 +39,7 @@ const Doctorreg = () => {
 
   const handleSubmit = async(e) => {
     e.preventDefault();
-    let { username, email, password, cpassword, phone, gender, age, clinicName, clinicAddress, specialization, qualification, profileimg, identityproof, degreeProof, clinicRegProof, experience, fees} = doctor;
+    let { username, email, password, cpassword, phone, gender, age, clinicName, clinicAddress, city, specialization, qualification, profileimg, identityproof, degreeProof, clinicRegProof, experience, fees, availableDays, availableTime} = doctor;
     let pattern = /^[\w\.]+\@[\w]+\.[a-zA-Z]{3}$/;
 
     if (!username || !email || !password || !phone || !gender || !age ||  !clinicName || !clinicAddress || !specialization || !qualification || !profileimg || !identityproof  || !degreeProof || !clinicRegProof || !experience || !fees) {
@@ -48,11 +50,39 @@ const Doctorreg = () => {
       toast.error("Passwords do not match");
     } else{
       try{
-        await axios.post(`${import.meta.env.VITE_BASE_URL}/doctors`, {...doctor, createdAt:new Date()})
-        toast.success("registered successfully")
+        const doctorData = {
+          username,
+          email,
+          password,
+          phone,
+          gender,
+          age,
+          clinic_name: clinicName,
+          clinic_address: clinicAddress,
+          city: city || '',
+          specialization,
+          qualification,
+          experience,
+          consultation_fee: fees,
+          available_days: availableDays || '',
+          available_time: availableTime || '',
+          profile_image: profileimg,
+          identity_proof: identityproof,
+          degree_proof: degreeProof,
+          clinic_reg_proof: clinicRegProof,
+          status: 'Pending',
+          createdAt: new Date()
+        };
+        
+        console.log('📤 Sending doctor registration data:', doctorData);
+        await axios.post(`${import.meta.env.VITE_BASE_URL}/doctors`, doctorData)
+        toast.success("Doctor registered successfully! Awaiting admin approval.")
         redirect('/login')
       }
-      catch(err){toast.error(err)}
+      catch(err){
+        console.error('❌ Registration error:', err);
+        toast.error(err.response?.data?.error || err.message || "Registration failed")
+      }
     }
   }
   
@@ -403,6 +433,31 @@ const Doctorreg = () => {
                           <Form.Control as="textarea" rows={3} placeholder="" value={doctor.clinicAddress}
                             onChange={(e) => setUser({ ...doctor, clinicAddress: e.target.value })} />
                           <Form.Label>Clinic Address</Form.Label>
+                        </Form.Group>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col md={6}>
+                        <Form.Group className="form-floating mb-3">
+                          <Form.Control type="text" placeholder="" value={doctor.city}
+                            onChange={(e) => setUser({ ...doctor, city: e.target.value })} />
+                          <Form.Label>City</Form.Label>
+                        </Form.Group>
+                      </Col>
+                      <Col md={6}>
+                        <Form.Group className="form-floating mb-3">
+                          <Form.Control type="text" placeholder="e.g., Mon-Sat" value={doctor.availableDays}
+                            onChange={(e) => setUser({ ...doctor, availableDays: e.target.value })} />
+                          <Form.Label>Available Days</Form.Label>
+                        </Form.Group>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col md={12}>
+                        <Form.Group className="form-floating mb-3">
+                          <Form.Control type="text" placeholder="e.g., 9:00 AM - 5:00 PM" value={doctor.availableTime}
+                            onChange={(e) => setUser({ ...doctor, availableTime: e.target.value })} />
+                          <Form.Label>Available Time</Form.Label>
                         </Form.Group>
                       </Col>
                     </Row>

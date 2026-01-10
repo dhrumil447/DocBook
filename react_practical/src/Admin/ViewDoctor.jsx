@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FaPenAlt, FaTrash, FaUserCheck, FaEye, FaUserMd } from 'react-icons/fa';
-import { MdManageAccounts } from 'react-icons/md';
+import { MdManageAccounts, MdVerified } from 'react-icons/md';
 import { useNavigate } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectdoctors, store_doctors } from '../redux/doctorSlice';
@@ -171,7 +171,27 @@ const ViewDoctor = () => {
                       }}>
                         <FaUserMd style={{ fontSize: '18px' }} />
                       </div>
-                      <span style={{ fontWeight: '600', color: '#2c3e50' }}>Dr. {doctor.username}</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ fontWeight: '600', color: '#2c3e50' }}>Dr. {doctor.username}</span>
+                          {doctor.status === "Accept" && (
+                            <span style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '2px 8px',
+                              borderRadius: '12px',
+                              background: 'linear-gradient(135deg, #198754, #20c997)',
+                              color: 'white',
+                              fontSize: '11px',
+                              fontWeight: '600'
+                            }}>
+                              <MdVerified style={{ fontSize: '12px' }} />
+                              Verified
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </td>
                   <td style={{ padding: '15px', verticalAlign: 'middle', color: '#495057' }}>{doctor.specialization || 'N/A'}</td>

@@ -81,6 +81,7 @@ const DoctorProfileModal = ({ show, handleClose, doctor }) => {
                     width: '160px',
                     height: '160px',
                     borderRadius: '50%',
+                    overflow: 'hidden',
                     background: 'linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%)',
                     display: 'flex',
                     alignItems: 'center',
@@ -89,7 +90,23 @@ const DoctorProfileModal = ({ show, handleClose, doctor }) => {
                     boxShadow: '0 8px 30px rgba(13, 110, 253, 0.4)',
                     border: '5px solid white'
                   }}>
-                    <FaUserMd style={{ fontSize: '80px', color: 'white' }} />
+                    {doctor.profile_image ? (
+                      <img
+                        src={doctor.profile_image}
+                        alt={`Dr. ${doctor.username}`}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover'
+                        }}
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.parentElement.innerHTML = '<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 448 512" style="font-size: 80px; color: white;" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M224 256c70.7 0 128-57.3 128-128S294.7 0 224 0 96 57.3 96 128s57.3 128 128 128zm89.6 32h-16.7c-22.2 10.2-46.9 16-72.9 16s-50.6-5.8-72.9-16h-16.7C60.2 288 0 348.2 0 422.4V464c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48v-41.6c0-74.2-60.2-134.4-134.4-134.4z"></path></svg>';
+                        }}
+                      />
+                    ) : (
+                      <FaUserMd style={{ fontSize: '80px', color: 'white' }} />
+                    )}
                   </div>
                   <h5 style={{ fontWeight: 'bold', color: '#2c3e50', marginBottom: '10px' }}>Dr. {doctor.username}</h5>
                   <div style={{
@@ -303,7 +320,7 @@ const DoctorProfileModal = ({ show, handleClose, doctor }) => {
                       </div>
                       <div>
                         <p style={{ margin: 0, fontSize: '12px', color: '#6c757d' }}>Clinic Name</p>
-                        <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: '#2c3e50' }}>{doctor.clinicName}</p>
+                        <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: '#2c3e50' }}>{doctor.clinic_name || 'N/A'}</p>
                       </div>
                     </div>
 
@@ -328,7 +345,7 @@ const DoctorProfileModal = ({ show, handleClose, doctor }) => {
                       </div>
                       <div>
                         <p style={{ margin: 0, fontSize: '12px', color: '#6c757d' }}>Consultation Fee</p>
-                        <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: '#2c3e50' }}>₹{doctor.fees}</p>
+                        <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: '#2c3e50' }}>₹{doctor.consultation_fee || 'N/A'}</p>
                       </div>
                     </div>
                   </div>
@@ -354,11 +371,36 @@ const DoctorProfileModal = ({ show, handleClose, doctor }) => {
                     }}>
                       <FaMapMarkerAlt style={{ fontSize: '18px', color: '#dc3545' }} />
                     </div>
-                    <div>
+                    <div style={{ width: '100%' }}>
                       <p style={{ margin: 0, fontSize: '12px', color: '#6c757d' }}>Clinic Address</p>
-                      <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: '#2c3e50' }}>{doctor.clinicAddress}</p>
+                      <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: '#2c3e50' }}>{doctor.clinic_address || 'N/A'}</p>
+                      {doctor.city && (
+                        <p style={{ margin: '5px 0 0 0', fontSize: '13px', color: '#6c757d' }}>City: {doctor.city}</p>
+                      )}
                     </div>
                   </div>
+
+                  {(doctor.available_days || doctor.available_time) && (
+                    <div style={{
+                      marginTop: '15px',
+                      padding: '15px',
+                      borderRadius: '12px',
+                      background: 'linear-gradient(135deg, #0d6efd11 0%, #0dcaf022 100%)',
+                      border: '2px solid #0d6efd33'
+                    }}>
+                      <p style={{ margin: '0 0 10px 0', fontSize: '14px', fontWeight: 'bold', color: '#2c3e50' }}>Availability</p>
+                      {doctor.available_days && (
+                        <p style={{ margin: '0 0 5px 0', fontSize: '13px', color: '#495057' }}>
+                          <strong>Days:</strong> {doctor.available_days}
+                        </p>
+                      )}
+                      {doctor.available_time && (
+                        <p style={{ margin: 0, fontSize: '13px', color: '#495057' }}>
+                          <strong>Time:</strong> {doctor.available_time}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </Col>
               </Row>
             </Card.Body>

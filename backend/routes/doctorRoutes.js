@@ -118,6 +118,12 @@ router.patch('/:id', async (req, res) => {
     const updates = [];
     const values = [];
     
+    // If status is being set to "Accept", automatically set is_verified to 1
+    if (req.body.status === 'Accept') {
+      req.body.is_verified = 1;
+      console.log('✅ Auto-setting is_verified = 1 for approved doctor');
+    }
+    
     // Dynamically build update query based on provided fields
     Object.keys(req.body).forEach(key => {
       updates.push(`${key} = ?`);
@@ -131,6 +137,8 @@ router.patch('/:id', async (req, res) => {
     values.push(req.params.id);
     
     const query = `UPDATE doctors SET ${updates.join(', ')} WHERE id = ?`;
+    console.log('🔍 Query:', query);
+    console.log('🔍 Values:', values);
     const [result] = await db.query(query, values);
     
     if (result.affectedRows === 0) {
