@@ -19,10 +19,10 @@ import EditPatient from "../Admin/EditPatient";
 import Footer from "./Footer";
 import Myprofile from "./Myprofile";
 
-
 import ContactUs from "./ContactUs";
 import DrSetslot from "../Doctor/DrSetslot";
 import ViewAppointment from "../Doctor/ViewAppointment";
+import TodayAppointments from "../Doctor/TodayAppointments";
 import Viewapp from "../Admin/Viewapp";
 import Prescription from "../Doctor/Prescription";
 import Medicalreport from "./Medicalreport";
@@ -36,60 +36,60 @@ import ResetPassword from "./ResetPassword";
 import EditPatientProfile from "./EditPatientProfile";
 import AdminContactMessages from "../Admin/AdminContactMessages";
 
-
-
 const Routing = () => {
   return (
     <>
-    <Routes>
-      
-      <Route path="/" element={<App />}>
-        <Route element={<><Header /><Outlet/><Footer/></>}>
-          <Route index element={<Home />}></Route>
-          <Route path="finddoctor" element={<Finddoctor/>}></Route>
-          <Route path="About" element={<About />}></Route>
-          <Route path="profile" element={<Myprofile/>}/>
-          <Route path="contact" element={<ContactUs/>}/>
-          <Route path="medicalreport" element={<Medicalreport/>}/>
-          <Route path="/edit-profile/:id" element={<EditPatientProfile />} />   
+      <Routes>
+        <Route path="/" element={<App />}>
+          <Route
+            element={
+              <>
+                <Header />
+                <Outlet />
+                <Footer />
+              </>
+            }
+          >
+            <Route index element={<Home />}></Route>
+            <Route path="finddoctor" element={<Finddoctor />}></Route>
+            <Route path="About" element={<About />}></Route>
+            <Route path="profile" element={<Myprofile />} />
+            <Route path="contact" element={<ContactUs />} />
+            <Route path="medicalreport" element={<Medicalreport />} />
+            <Route path="/edit-profile/:id" element={<EditPatientProfile />} />
+          </Route>
+
+          <Route path="admin" element={<AdminLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="doctor/edit/:id" element={<EditDoctor />} />
+            <Route path="view" element={<ViewDoctor />} />
+            <Route path="patient" element={<ViewPatient />} />
+            <Route path="patient/edit/:id" element={<EditPatient />} />
+            <Route path="viewap" element={<Viewapp />} />
+            <Route path="review" element={<AdminReview />} />
+            <Route path="payment" element={<AdminPayments />} />
+            <Route path="contact-messages" element={<AdminContactMessages />} />
+          </Route>
+
+          <Route path="doctor" element={<Doctorpanel />}>
+            <Route index element={<DoctorDashboard />} />
+            <Route path="dashboard" element={<DoctorDashboard />} />
+            <Route path="today" element={<TodayAppointments />} />
+            <Route path="setslot" element={<DrSetslot />} />
+            <Route path="ap" element={<ViewAppointment />} />
+            <Route path="prescription/:id" element={<Prescription />} />
+            <Route path="patient" element={<DoctorPatients />} />
+            <Route path="review" element={<DoctorReviews />} />
+          </Route>
+
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
+          <Route path="doctorreg" element={<Doctorreg />} />
+
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
         </Route>
-        
-
-        <Route path="admin" element={<AdminLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="doctor/edit/:id" element={<EditDoctor />} />
-          <Route path="view" element={<ViewDoctor />} />
-          <Route path="patient" element={<ViewPatient/>}/>
-          <Route path="patient/edit/:id" element={<EditPatient/>}/>
-          <Route path="viewap" element={<Viewapp/>}/>
-          <Route path="review" element={<AdminReview/>}/>
-          <Route path="payment" element={<AdminPayments/>}/>
-          <Route path="contact-messages" element={<AdminContactMessages/>}/>
-        </Route>
-
-        <Route path="doctor" element={<Doctorpanel />}>
-          <Route index element={<DoctorDashboard/>}/>
-          <Route path="setslot" element={<DrSetslot/>}/>
-          <Route path="dashboard" element={<DoctorDashboard/>}/>
-          <Route path="ap" element={<ViewAppointment/>} />
-          <Route path="prescription/:id" element={<Prescription/>}/>
-          <Route path="patient" element={<DoctorPatients/>}/> 
-          <Route path="review" element={<DoctorReviews/>}/>
-        </Route>
-
-
-
-        <Route path="login" element={<Login />} />
-        <Route path="register" element={<Register />} />
-        <Route path="doctorreg" element={<Doctorreg />} />
-        
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
-      </Route>
-
-     
-    </Routes>
-    
-     </>
+      </Routes>
+    </>
   );
 };
 
