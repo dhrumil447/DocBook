@@ -18,11 +18,11 @@ const DoctorProfileModal = ({ show, handleClose, doctor }) => {
 
   const fetchReviews = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/reviews?doctorId=${doctor.id}`);
+      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/reviews?doctor_id=${doctor.id}`);
       const reviewsWithNames = await Promise.all(
         res.data.map(async (review) => {
           try {
-            const patientRes = await axios.get(`${import.meta.env.VITE_BASE_URL}/patients/${review.patientId}`);
+            const patientRes = await axios.get(`${import.meta.env.VITE_BASE_URL}/patients/${review.patient_id}`);
             return { ...review, patientName: patientRes.data.username };
           } catch (err) {
             console.error("Error fetching patient details:", err);

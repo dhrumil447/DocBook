@@ -30,6 +30,9 @@ import DoctorPatients from "../Doctor/DoctorPatients";
 import DoctorDashboard from "../Doctor/DoctorDashboard";
 import AdminReview from "../Admin/AdminReview";
 import DoctorReviews from "../Doctor/DoctorReview";
+import CompletedAppointments from "../Doctor/CompletedAppointments";
+import RejectedAppointments from "../Doctor/RejectedAppointments";
+import DoctorProfile from "../Doctor/DoctorProfile";
 import AdminPayments from "../Admin/Payment";
 
 import ResetPassword from "./ResetPassword";
@@ -77,9 +80,12 @@ const Routing = () => {
             <Route path="today" element={<TodayAppointments />} />
             <Route path="setslot" element={<DrSetslot />} />
             <Route path="ap" element={<ViewAppointment />} />
+            <Route path="completed" element={<CompletedAppointments />} />
+            <Route path="rejected" element={<RejectedAppointments />} />
             <Route path="prescription/:id" element={<Prescription />} />
             <Route path="patient" element={<DoctorPatients />} />
             <Route path="review" element={<DoctorReviews />} />
+            <Route path="profile" element={<DoctorProfile />} />
           </Route>
 
           <Route path="login" element={<Login />} />

@@ -22,6 +22,8 @@ import { MdEmail, MdEventNote, MdDescription } from "react-icons/md";
 const ViewAppointment = () => {
   const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
+  const [filteredAppointments, setFilteredAppointments] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [medicines, setMedicines] = useState([]);
@@ -95,6 +97,7 @@ const ViewAppointment = () => {
           return b.id - a.id;
         });
         setAppointments(sortedAppointments);
+        setFilteredAppointments(sortedAppointments);
       } catch (err) {
         console.error("Error fetching appointments:", err);
       }
@@ -232,6 +235,20 @@ const ViewAppointment = () => {
     }
   };
 
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+    if (!value.trim()) {
+      setFilteredAppointments(appointments);
+      return;
+    }
+    const filtered = appointments.filter(
+      (appt) =>
+        appt.patientName.toLowerCase().includes(value.toLowerCase()) ||
+        appt.patientPhone.includes(value),
+    );
+    setFilteredAppointments(filtered);
+  };
+
   return (
     <div className="container mt-4">
       <style>{`
@@ -279,6 +296,42 @@ const ViewAppointment = () => {
           </div>
         </div>
       </div>
+
+      {/* Search Filter */}
+      <Card
+        style={{
+          border: "none",
+          borderRadius: "15px",
+          boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
+          marginBottom: "25px",
+        }}
+      >
+        <Card.Body style={{ padding: "20px" }}>
+          <Form.Group>
+            <Form.Label
+              style={{
+                fontWeight: "600",
+                color: "#2c3e50",
+                marginBottom: "10px",
+              }}
+            >
+              🔍 Search Appointments
+            </Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Search by patient name or phone number..."
+              value={searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+              style={{
+                padding: "12px",
+                borderRadius: "10px",
+                border: "2px solid #e9ecef",
+                fontSize: "15px",
+              }}
+            />
+          </Form.Group>
+        </Card.Body>
+      </Card>
 
       <Card
         style={{
@@ -340,7 +393,7 @@ const ViewAppointment = () => {
               </tr>
             </thead>
             <tbody>
-              {appointments.map((appt) => (
+              {filteredAppointments.map((appt) => (
                 <tr key={appt.id} className="appointment-row">
                   <td style={{ padding: "15px", verticalAlign: "middle" }}>
                     <div
@@ -463,7 +516,7 @@ const ViewAppointment = () => {
                         <Button
                           style={{
                             background:
-                              "linear-gradient(135deg, #0dcaf0, #0d6efd)",
+                              "linear-gradient(135deg, #6f42c1, #9d7bd8)",
                             border: "none",
                             padding: "8px 16px",
                             borderRadius: "8px",
@@ -474,24 +527,47 @@ const ViewAppointment = () => {
                             gap: "6px",
                             transition: "all 0.3s ease",
                           }}
-                          onClick={() => {
-                            setSelectedAppointment(appt);
-                            setShowModal(true);
-                          }}
+                          onClick={() =>
+                            navigate(`/doctor/prescription/${appt.id}`)
+                          }
                           onMouseOver={(e) => {
                             e.target.style.transform = "translateY(-2px)";
                             e.target.style.boxShadow =
-                              "0 4px 12px rgba(13, 110, 253, 0.3)";
+                              "0 4px 12px rgba(111, 66, 193, 0.3)";
                           }}
                           onMouseOut={(e) => {
                             e.target.style.transform = "translateY(0)";
                             e.target.style.boxShadow = "none";
                           }}
                         >
-                          <FaPrescriptionBottleAlt
-                            style={{ fontSize: "12px" }}
-                          />
-                          Write Prescription
+                          <FaEye style={{ fontSize: "12px" }} />
+                          View
+                        </Button>
+                      </div>
+                    ) : appt.status === "Completed" ? (
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "8px",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <Button
+                          style={{
+                            background:
+                              "linear-gradient(135deg, #198754, #20c997)",
+                            border: "none",
+                            padding: "8px 16px",
+                            borderRadius: "8px",
+                            fontSize: "13px",
+                            fontWeight: "600",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
+                          <FaCheck style={{ fontSize: "12px" }} />
+                          Completed
                         </Button>
                         <Button
                           style={{
@@ -521,7 +597,7 @@ const ViewAppointment = () => {
                           }}
                         >
                           <FaEye style={{ fontSize: "12px" }} />
-                          View
+                          View Prescription
                         </Button>
                       </div>
                     ) : (

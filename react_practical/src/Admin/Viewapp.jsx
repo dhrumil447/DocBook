@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Card, Button, Table, Form } from "react-bootstrap";
+import { Card, Button, Table, Form, Modal, Badge } from "react-bootstrap";
 import { toast } from "react-toastify";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -11,6 +11,10 @@ import {
   FaUserMd,
   FaUser,
   FaTimes,
+  FaEye,
+  FaPhone,
+  FaEnvelope,
+  FaMoneyBillWave,
 } from "react-icons/fa";
 import { MdEventNote } from "react-icons/md";
 
@@ -18,6 +22,8 @@ const AdminViewAppointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchDate, setSearchDate] = useState("");
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
 
   // Convert YYYY-MM-DD to DD-MM-YYYY
   const formatDate = (date) => {
@@ -37,41 +43,51 @@ const AdminViewAppointments = () => {
           res.data.map(async (appt) => {
             try {
               const patientRes = await axios.get(
-                `${import.meta.env.VITE_BASE_URL}/patients/${appt.patientId}`,
+                `${import.meta.env.VITE_BASE_URL}/patients/${appt.patient_id}`,
               );
               const doctorRes = await axios.get(
-                `${import.meta.env.VITE_BASE_URL}/doctors/${appt.doctorId}`,
+                `${import.meta.env.VITE_BASE_URL}/doctors/${appt.doctor_id}`,
               );
               const paymentRes = await axios.get(
-                `${import.meta.env.VITE_BASE_URL}/Payment?appointmentId=${appt.id}`,
+                `${import.meta.env.VITE_BASE_URL}/payments?appointment_id=${appt.id}`,
               );
 
               // Check if payment data exists
               const paymentData =
                 paymentRes.data.length > 0
                   ? paymentRes.data[0]
-                  : { razorpayId: "N/A", paymentMethod: "N/A" };
+                  : { razorpay_payment_id: "N/A", payment_method: "N/A" };
 
               return {
                 ...appt,
+                date: appt.appointment_date || appt.date,
+                slot: appt.time_slot || appt.slot,
                 patientName: patientRes.data.username,
                 patientPhone: patientRes.data.phone,
                 patientEmail: patientRes.data.email,
                 doctorName: doctorRes.data.username,
-                formattedDate: formatDate(appt.date),
-                razorpayId: paymentData.razorpayId,
-                paymentMethod: paymentData.paymentMethod,
+                formattedDate: formatDate(appt.appointment_date || appt.date),
+                razorpayId:
+                  paymentData.razorpay_payment_id ||
+                  paymentData.razorpayId ||
+                  "N/A",
+                paymentMethod:
+                  paymentData.payment_method ||
+                  paymentData.paymentMethod ||
+                  "N/A",
                 createdAt: appt.created_at,
               };
             } catch (err) {
               console.error("Error fetching details:", err);
               return {
                 ...appt,
+                date: appt.appointment_date || appt.date,
+                slot: appt.time_slot || appt.slot,
                 patientName: "Unknown",
                 doctorName: "Unknown",
                 patientPhone: "-",
                 patientEmail: "-",
-                formattedDate: formatDate(appt.date),
+                formattedDate: formatDate(appt.appointment_date || appt.date),
                 razorpayId: "N/A",
                 paymentMethod: "N/A",
                 createdAt: appt.created_at,
@@ -103,11 +119,11 @@ const AdminViewAppointments = () => {
   const cancelAppointment = async (id) => {
     try {
       await axios.patch(`${import.meta.env.VITE_BASE_URL}/appointments/${id}`, {
-        status: "Canceled",
+        status: "Cancelled",
       });
       setAppointments((prev) =>
         prev.map((appt) =>
-          appt.id === id ? { ...appt, status: "Canceled" } : appt,
+          appt.id === id ? { ...appt, status: "Cancelled" } : appt,
         ),
       );
       toast.success("Appointment canceled successfully!");
@@ -115,6 +131,39 @@ const AdminViewAppointments = () => {
       console.error("Error canceling appointment:", err);
       toast.error("Failed to cancel appointment.");
     }
+  };
+
+  // View appointment details
+  const viewDetails = (appointment) => {
+    setSelectedAppointment(appointment);
+    setShowDetailsModal(true);
+  };
+
+  // Get status badge style
+  const getStatusBadge = (status) => {
+    const styles = {
+      Pending: {
+        bg: "linear-gradient(135deg, #ffc107, #ff9800)",
+        text: "Pending",
+      },
+      Confirmed: {
+        bg: "linear-gradient(135deg, #0dcaf0, #0d6efd)",
+        text: "Confirmed",
+      },
+      Completed: {
+        bg: "linear-gradient(135deg, #198754, #20c997)",
+        text: "Completed",
+      },
+      Cancelled: {
+        bg: "linear-gradient(135deg, #dc3545, #c82333)",
+        text: "Cancelled",
+      },
+      Rejected: {
+        bg: "linear-gradient(135deg, #6c757d, #495057)",
+        text: "Rejected",
+      },
+    };
+    return styles[status] || styles.Pending;
   };
 
   // Filter Appointments based on search query & date
@@ -299,7 +348,7 @@ const AdminViewAppointments = () => {
                       border: "none",
                     }}
                   >
-                    Email
+                    Contact
                   </th>
                   <th
                     style={{
@@ -308,25 +357,7 @@ const AdminViewAppointments = () => {
                       border: "none",
                     }}
                   >
-                    Phone
-                  </th>
-                  <th
-                    style={{
-                      padding: "15px",
-                      fontWeight: "600",
-                      border: "none",
-                    }}
-                  >
-                    Date
-                  </th>
-                  <th
-                    style={{
-                      padding: "15px",
-                      fontWeight: "600",
-                      border: "none",
-                    }}
-                  >
-                    Time Slot
+                    Appointment
                   </th>
                   <th
                     style={{
@@ -435,40 +466,38 @@ const AdminViewAppointments = () => {
                       style={{
                         padding: "15px",
                         verticalAlign: "middle",
-                        color: "#495057",
-                        fontSize: "14px",
+                        fontSize: "13px",
                       }}
                     >
-                      {appt.patientEmail}
-                    </td>
-                    <td
-                      style={{
-                        padding: "15px",
-                        verticalAlign: "middle",
-                        color: "#495057",
-                        fontSize: "14px",
-                      }}
-                    >
-                      {appt.patientPhone}
-                    </td>
-                    <td
-                      style={{
-                        padding: "15px",
-                        verticalAlign: "middle",
-                        color: "#495057",
-                        fontWeight: "500",
-                      }}
-                    >
-                      {appt.date}
-                    </td>
-                    <td
-                      style={{
-                        padding: "15px",
-                        verticalAlign: "middle",
-                        color: "#495057",
-                      }}
-                    >
-                      {appt.slot}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "5px",
+                          marginBottom: "5px",
+                        }}
+                      >
+                        <FaPhone
+                          style={{ color: "#6f42c1", fontSize: "12px" }}
+                        />
+                        <span style={{ color: "#495057" }}>
+                          {appt.patientPhone}
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "5px",
+                        }}
+                      >
+                        <FaEnvelope
+                          style={{ color: "#6f42c1", fontSize: "12px" }}
+                        />
+                        <small style={{ color: "#6c757d" }}>
+                          {appt.patientEmail}
+                        </small>
+                      </div>
                     </td>
                     <td
                       style={{
@@ -477,11 +506,45 @@ const AdminViewAppointments = () => {
                         fontSize: "13px",
                       }}
                     >
-                      <div style={{ fontWeight: "600", color: "#2c3e50" }}>
-                        {appt.paymentMethod}
+                      <div
+                        style={{
+                          fontWeight: "500",
+                          color: "#2c3e50",
+                          marginBottom: "5px",
+                        }}
+                      >
+                        {appt.date}
                       </div>
-                      <small style={{ color: "#6c757d" }}>
-                        {appt.razorpayId}
+                      <small style={{ color: "#6c757d" }}>{appt.slot}</small>
+                    </td>
+                    <td
+                      style={{
+                        padding: "15px",
+                        verticalAlign: "middle",
+                        fontSize: "13px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "5px",
+                          marginBottom: "5px",
+                        }}
+                      >
+                        <FaMoneyBillWave
+                          style={{ color: "#198754", fontSize: "12px" }}
+                        />
+                        <span style={{ fontWeight: "600", color: "#2c3e50" }}>
+                          {appt.paymentMethod}
+                        </span>
+                      </div>
+                      <small
+                        style={{ color: "#6c757d", fontFamily: "monospace" }}
+                      >
+                        {appt.razorpayId && appt.razorpayId !== "N/A"
+                          ? appt.razorpayId.substring(0, 20) + "..."
+                          : "N/A"}
                       </small>
                     </td>
                     <td
@@ -497,15 +560,12 @@ const AdminViewAppointments = () => {
                           borderRadius: "20px",
                           fontSize: "12px",
                           fontWeight: "600",
-                          background:
-                            appt.status === "Canceled"
-                              ? "linear-gradient(135deg, #dc3545, #c82333)"
-                              : "linear-gradient(135deg, #198754, #20c997)",
+                          background: getStatusBadge(appt.status).bg,
                           color: "white",
                           display: "inline-block",
                         }}
                       >
-                        {appt.status || "Pending"}
+                        {getStatusBadge(appt.status).text}
                       </span>
                     </td>
                     <td
@@ -515,28 +575,20 @@ const AdminViewAppointments = () => {
                         textAlign: "center",
                       }}
                     >
-                      {appt.status === "Canceled" ? (
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "8px",
+                          justifyContent: "center",
+                        }}
+                      >
                         <Button
-                          disabled
-                          style={{
-                            background: "#6c757d",
-                            border: "none",
-                            padding: "8px 16px",
-                            borderRadius: "8px",
-                            fontSize: "13px",
-                            fontWeight: "600",
-                          }}
-                        >
-                          Canceled
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={() => cancelAppointment(appt.id)}
+                          onClick={() => viewDetails(appt)}
                           style={{
                             background:
-                              "linear-gradient(135deg, #dc3545, #c82333)",
+                              "linear-gradient(135deg, #0dcaf0, #0d6efd)",
                             border: "none",
-                            padding: "8px 16px",
+                            padding: "8px 14px",
                             borderRadius: "8px",
                             fontSize: "13px",
                             fontWeight: "600",
@@ -553,9 +605,56 @@ const AdminViewAppointments = () => {
                             (e.currentTarget.style.transform = "translateY(0)")
                           }
                         >
-                          <FaTimes /> Cancel
+                          {" "}
+                          <FaEye /> View
                         </Button>
-                      )}
+                        {appt.status === "Cancelled" ||
+                        appt.status === "Completed" ? (
+                          <Button
+                            disabled
+                            style={{
+                              background: "#6c757d",
+                              border: "none",
+                              padding: "8px 14px",
+                              borderRadius: "8px",
+                              fontSize: "13px",
+                              fontWeight: "600",
+                              opacity: 0.6,
+                            }}
+                          >
+                            {appt.status === "Cancelled"
+                              ? "Cancelled"
+                              : "Completed"}
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={() => cancelAppointment(appt.id)}
+                            style={{
+                              background:
+                                "linear-gradient(135deg, #dc3545, #c82333)",
+                              border: "none",
+                              padding: "8px 14px",
+                              borderRadius: "8px",
+                              fontSize: "13px",
+                              fontWeight: "600",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "5px",
+                              transition: "all 0.3s ease",
+                            }}
+                            onMouseOver={(e) =>
+                              (e.currentTarget.style.transform =
+                                "translateY(-2px)")
+                            }
+                            onMouseOut={(e) =>
+                              (e.currentTarget.style.transform =
+                                "translateY(0)")
+                            }
+                          >
+                            <FaTimes /> Cancel
+                          </Button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -575,6 +674,262 @@ const AdminViewAppointments = () => {
           </div>
         )}
       </Card>
+
+      {/* Appointment Details Modal */}
+      <Modal
+        show={showDetailsModal}
+        onHide={() => setShowDetailsModal(false)}
+        size="lg"
+        centered
+      >
+        <Modal.Header
+          closeButton
+          style={{
+            background: "linear-gradient(135deg, #6f42c1, #9d7bd8)",
+            color: "white",
+            border: "none",
+          }}
+        >
+          <Modal.Title
+            style={{
+              fontWeight: "700",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+            }}
+          >
+            <FaCalendarAlt /> Appointment Details #{selectedAppointment?.id}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body style={{ padding: "25px", background: "#f8f9fa" }}>
+          {selectedAppointment && (
+            <div>
+              {/* Patient & Doctor Info */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "20px",
+                  marginBottom: "20px",
+                }}
+              >
+                <Card
+                  style={{
+                    border: "none",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                  }}
+                >
+                  <Card.Body>
+                    <h6
+                      style={{
+                        marginBottom: "15px",
+                        color: "#6f42c1",
+                        fontWeight: "700",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <FaUser /> Patient Information
+                    </h6>
+                    <div style={{ fontSize: "14px", lineHeight: "2" }}>
+                      <div>
+                        <strong>Name:</strong> {selectedAppointment.patientName}
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "5px",
+                        }}
+                      >
+                        <FaPhone style={{ color: "#6f42c1" }} />
+                        <span>{selectedAppointment.patientPhone}</span>
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "5px",
+                        }}
+                      >
+                        <FaEnvelope style={{ color: "#6f42c1" }} />
+                        <small>{selectedAppointment.patientEmail}</small>
+                      </div>
+                    </div>
+                  </Card.Body>
+                </Card>
+
+                <Card
+                  style={{
+                    border: "none",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                  }}
+                >
+                  <Card.Body>
+                    <h6
+                      style={{
+                        marginBottom: "15px",
+                        color: "#6f42c1",
+                        fontWeight: "700",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <FaUserMd /> Doctor Information
+                    </h6>
+                    <div style={{ fontSize: "14px", lineHeight: "2" }}>
+                      <div>
+                        <strong>Name:</strong> Dr.{" "}
+                        {selectedAppointment.doctorName}
+                      </div>
+                    </div>
+                  </Card.Body>
+                </Card>
+              </div>
+
+              {/* Appointment Details */}
+              <Card
+                style={{
+                  border: "none",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                  marginBottom: "20px",
+                }}
+              >
+                <Card.Body>
+                  <h6
+                    style={{
+                      marginBottom: "15px",
+                      color: "#6f42c1",
+                      fontWeight: "700",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <FaCalendarAlt /> Appointment Details
+                  </h6>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "15px",
+                      fontSize: "14px",
+                    }}
+                  >
+                    <div>
+                      <strong style={{ color: "#495057" }}>Date:</strong>
+                      <div style={{ color: "#212529", marginTop: "5px" }}>
+                        {selectedAppointment.date}
+                      </div>
+                    </div>
+                    <div>
+                      <strong style={{ color: "#495057" }}>Time Slot:</strong>
+                      <div style={{ color: "#212529", marginTop: "5px" }}>
+                        {selectedAppointment.slot}
+                      </div>
+                    </div>
+                    <div>
+                      <strong style={{ color: "#495057" }}>Status:</strong>
+                      <div style={{ marginTop: "5px" }}>
+                        <Badge
+                          style={{
+                            background: getStatusBadge(
+                              selectedAppointment.status,
+                            ).bg,
+                            padding: "6px 12px",
+                            fontSize: "12px",
+                          }}
+                        >
+                          {getStatusBadge(selectedAppointment.status).text}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <strong style={{ color: "#495057" }}>
+                        Disease/Concern:
+                      </strong>
+                      <div style={{ color: "#212529", marginTop: "5px" }}>
+                        {selectedAppointment.disease || "Not specified"}
+                      </div>
+                    </div>
+                  </div>
+                </Card.Body>
+              </Card>
+
+              {/* Payment Information */}
+              <Card
+                style={{
+                  border: "none",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                }}
+              >
+                <Card.Body>
+                  <h6
+                    style={{
+                      marginBottom: "15px",
+                      color: "#6f42c1",
+                      fontWeight: "700",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <FaMoneyBillWave /> Payment Information
+                  </h6>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "15px",
+                      fontSize: "14px",
+                    }}
+                  >
+                    <div>
+                      <strong style={{ color: "#495057" }}>
+                        Payment Method:
+                      </strong>
+                      <div style={{ color: "#212529", marginTop: "5px" }}>
+                        {selectedAppointment.paymentMethod}
+                      </div>
+                    </div>
+                    <div>
+                      <strong style={{ color: "#495057" }}>
+                        Transaction ID:
+                      </strong>
+                      <div
+                        style={{
+                          color: "#6c757d",
+                          fontSize: "13px",
+                          fontFamily: "monospace",
+                          marginTop: "5px",
+                        }}
+                      >
+                        {selectedAppointment.razorpayId}
+                      </div>
+                    </div>
+                  </div>
+                </Card.Body>
+              </Card>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer style={{ border: "none", background: "#f8f9fa" }}>
+          <Button
+            variant="secondary"
+            onClick={() => setShowDetailsModal(false)}
+            style={{
+              background: "#6c757d",
+              border: "none",
+              padding: "8px 20px",
+              borderRadius: "8px",
+            }}
+          >
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

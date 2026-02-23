@@ -32,6 +32,32 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Get single appointment by ID
+router.get("/:id", async (req, res) => {
+  console.log("🔵 GET /api/appointments/:id", req.params.id);
+  try {
+    const [rows] = await db.query(
+      `SELECT a.*, p.username as patient_name, d.username as doctor_name, d.specialization 
+       FROM appointments a 
+       LEFT JOIN patients p ON a.patient_id = p.id 
+       LEFT JOIN doctors d ON a.doctor_id = d.id 
+       WHERE a.id = ?`,
+      [req.params.id],
+    );
+
+    if (rows.length === 0) {
+      console.log("❌ Appointment not found");
+      return res.status(404).json({ error: "Appointment not found" });
+    }
+
+    console.log("✅ Appointment found:", rows[0]);
+    res.json(rows[0]);
+  } catch (error) {
+    console.error("❌ Error fetching appointment:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Create appointment
 router.post("/", async (req, res) => {
   console.log("🔵 POST /api/appointments");

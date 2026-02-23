@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import emailjs from "@emailjs/browser";
 import { useNavigate } from "react-router";
 import { Card, Button, Table, Badge, Form } from "react-bootstrap";
 import { toast } from "react-toastify";
@@ -11,14 +10,12 @@ import {
   FaCalendarAlt,
   FaClock,
   FaMoneyBillWave,
-  FaCheck,
-  FaTimes,
   FaPrescriptionBottleAlt,
-  FaCalendarDay,
+  FaCheckCircle,
 } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 
-const TodayAppointments = () => {
+const CompletedAppointments = () => {
   const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [filteredAppointments, setFilteredAppointments] = useState([]);
@@ -32,25 +29,23 @@ const TodayAppointments = () => {
       return;
     }
 
-    fetchTodayAppointments(doctorId);
+    fetchCompletedAppointments(doctorId);
   }, [navigate]);
 
-  const fetchTodayAppointments = async (doctorId) => {
+  const fetchCompletedAppointments = async (doctorId) => {
     try {
       setLoading(true);
       const res = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/appointments?doctor_id=${doctorId}`,
       );
 
-      // Filter today's appointments
-      const today = moment().format("YYYY-MM-DD");
-      const todayAppointments = res.data.filter((appt) => {
-        const apptDate = moment(appt.appointment_date).format("YYYY-MM-DD");
-        return apptDate === today;
+      // Filter completed appointments
+      const completedAppointments = res.data.filter((appt) => {
+        return appt.status === "Completed";
       });
 
       const appointmentsWithPatients = await Promise.all(
-        todayAppointments.map(async (appt) => {
+        completedAppointments.map(async (appt) => {
           const patientId = appt.patient_id || appt.patientId;
           const patientRes = await axios.get(
             `${import.meta.env.VITE_BASE_URL}/patients/${patientId}`,
@@ -89,11 +84,11 @@ const TodayAppointments = () => {
         }),
       );
 
-      // Sort by time (earliest first)
+      // Sort by date (most recent first)
       const sortedAppointments = appointmentsWithPatients.sort((a, b) => {
-        const timeA = moment(a.slot, "HH:mm:ss");
-        const timeB = moment(b.slot, "HH:mm:ss");
-        return timeA.diff(timeB);
+        const dateA = moment(a.date);
+        const dateB = moment(b.date);
+        return dateB.diff(dateA);
       });
 
       setAppointments(sortedAppointments);
@@ -101,76 +96,12 @@ const TodayAppointments = () => {
       setLoading(false);
     } catch (err) {
       console.error("Error fetching appointments:", err);
-      toast.error("Failed to fetch today's appointments");
+      toast.error("Failed to fetch completed appointments");
       setLoading(false);
     }
   };
 
-  const updateAppointmentStatus = async (
-    id,
-    status,
-    patientEmail,
-    patientName,
-    appointmentDate,
-    appointmentTime,
-  ) => {
-    try {
-      if (status === "Cancelled") {
-        // Delete the appointment if cancelled/rejected
-        await axios.delete(
-          `${import.meta.env.VITE_BASE_URL}/appointments/${id}`,
-        );
-        toast.success("Appointment rejected and deleted successfully!");
-
-        // Remove from local state
-        setAppointments((prev) => prev.filter((appt) => appt.id !== id));
-      } else {
-        // Update the appointment status if confirmed
-        await axios.patch(
-          `${import.meta.env.VITE_BASE_URL}/appointments/${id}`,
-          { status },
-        );
-        toast.success(
-          `Appointment ${status === "Confirmed" ? "accepted" : status.toLowerCase()} successfully!`,
-        );
-
-        if (status === "Confirmed" && patientEmail) {
-          emailjs
-            .send(
-              "service_rl0f4za",
-              "template_zodqxou",
-              {
-                email: patientEmail,
-                patient_name: patientName,
-                appointment_date: appointmentDate,
-                appointment_time: appointmentTime,
-              },
-              { publicKey: "SwJM3G57VeGq0uvhd" },
-            )
-            .then((response) => {
-              console.log("Email sent successfully:", response);
-              toast.success("Email notification sent to patient!");
-            })
-            .catch((error) => {
-              console.error("Error sending email:", error);
-              toast.error(
-                `Error sending email: ${error.text || "Unknown error"}`,
-              );
-            });
-        }
-
-        // Update local state
-        setAppointments((prev) =>
-          prev.map((appt) => (appt.id === id ? { ...appt, status } : appt)),
-        );
-      }
-    } catch (error) {
-      console.error("Error updating appointment:", error);
-      toast.error("Failed to update appointment status");
-    }
-  };
-
-  const handleWritePrescription = (appointmentId) => {
+  const handleViewPrescription = (appointmentId) => {
     navigate(`/doctor/prescription/${appointmentId}`);
   };
 
@@ -210,9 +141,9 @@ const TodayAppointments = () => {
         style={{
           border: "none",
           borderRadius: "20px",
-          boxShadow: "0 10px 30px rgba(13, 110, 253, 0.15)",
+          boxShadow: "0 10px 30px rgba(25, 135, 84, 0.15)",
           marginBottom: "30px",
-          background: "linear-gradient(135deg, #0d6efd, #0dcaf0)",
+          background: "linear-gradient(135deg, #198754, #20c997)",
           color: "white",
         }}
       >
@@ -230,17 +161,17 @@ const TodayAppointments = () => {
                 backdropFilter: "blur(10px)",
               }}
             >
-              <FaCalendarDay style={{ fontSize: "28px" }} />
+              <FaCheckCircle style={{ fontSize: "28px" }} />
             </div>
             <div>
               <h3 style={{ margin: "0", fontWeight: "700" }}>
-                Today's Appointments
+                Completed Appointments
               </h3>
               <p
                 style={{ margin: "5px 0 0 0", opacity: 0.9, fontSize: "15px" }}
               >
-                {moment().format("dddd, MMMM DD, YYYY")} • {appointments.length}{" "}
-                appointments scheduled
+                All successfully completed appointments • {appointments.length}{" "}
+                total
               </p>
             </div>
           </div>
@@ -257,33 +188,30 @@ const TodayAppointments = () => {
         }}
       >
         <Card.Body style={{ padding: "20px" }}>
-          <div className="row align-items-center">
-            <div className="col-md-12">
-              <Form.Group>
-                <Form.Label
-                  style={{
-                    fontWeight: "600",
-                    color: "#2c3e50",
-                    marginBottom: "10px",
-                  }}
-                >
-                  🔍 Search Appointments
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Search by patient name or phone number..."
-                  value={searchTerm}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  style={{
-                    padding: "12px",
-                    borderRadius: "10px",
-                    border: "2px solid #e9ecef",
-                    fontSize: "15px",
-                  }}
-                />
-              </Form.Group>
-            </div>
-          </div>
+          <Form.Group>
+            <Form.Label
+              style={{
+                fontWeight: "600",
+                color: "#2c3e50",
+                marginBottom: "10px",
+              }}
+            >
+              🔍 Search Appointments
+            </Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Search by patient name or phone number..."
+              value={searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+              style={{
+                borderRadius: "10px",
+                border: "2px solid #e0e0e0",
+                padding: "12px 15px",
+                fontSize: "15px",
+                transition: "all 0.3s ease",
+              }}
+            />
+          </Form.Group>
         </Card.Body>
       </Card>
 
@@ -296,7 +224,7 @@ const TodayAppointments = () => {
             fontSize: "18px",
           }}
         >
-          Loading today's appointments...
+          Loading completed appointments...
         </div>
       ) : appointments.length === 0 ? (
         <Card
@@ -307,7 +235,7 @@ const TodayAppointments = () => {
           }}
         >
           <Card.Body style={{ padding: "60px", textAlign: "center" }}>
-            <FaCalendarDay
+            <FaCheckCircle
               style={{
                 fontSize: "64px",
                 color: "#dee2e6",
@@ -315,11 +243,11 @@ const TodayAppointments = () => {
               }}
             />
             <h4 style={{ color: "#6c757d", marginBottom: "10px" }}>
-              No Appointments Today
+              No Completed Appointments
             </h4>
             <p style={{ color: "#adb5bd", marginBottom: "0" }}>
-              You have no scheduled appointments for today. Enjoy your free
-              time!
+              Completed appointments will appear here after prescription is
+              written.
             </p>
           </Card.Body>
         </Card>
@@ -337,11 +265,12 @@ const TodayAppointments = () => {
           >
             <thead
               style={{
-                background: "linear-gradient(135deg, #0d6efd, #0dcaf0)",
+                background: "linear-gradient(135deg, #198754, #20c997)",
                 color: "white",
               }}
             >
               <tr>
+                <th style={{ padding: "18px", fontWeight: "600" }}>Date</th>
                 <th style={{ padding: "18px", fontWeight: "600" }}>Time</th>
                 <th style={{ padding: "18px", fontWeight: "600" }}>
                   Patient Info
@@ -370,6 +299,22 @@ const TodayAppointments = () => {
                     borderBottom: "1px solid #e9ecef",
                   }}
                 >
+                  <td style={{ padding: "18px", verticalAlign: "middle" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                      }}
+                    >
+                      <FaCalendarAlt
+                        style={{ color: "#198754", fontSize: "18px" }}
+                      />
+                      <span style={{ fontWeight: "600", fontSize: "15px" }}>
+                        {moment(appt.date).format("DD MMM YYYY")}
+                      </span>
+                    </div>
+                  </td>
                   <td style={{ padding: "18px", verticalAlign: "middle" }}>
                     <div
                       style={{
@@ -450,15 +395,7 @@ const TodayAppointments = () => {
                   </td>
                   <td style={{ padding: "18px", verticalAlign: "middle" }}>
                     <Badge
-                      bg={
-                        appt.status === "Confirmed"
-                          ? "success"
-                          : appt.status === "Pending"
-                            ? "warning"
-                            : appt.status === "Completed"
-                              ? "info"
-                              : "secondary"
-                      }
+                      bg="success"
                       style={{
                         fontSize: "13px",
                         padding: "8px 16px",
@@ -466,7 +403,8 @@ const TodayAppointments = () => {
                         fontWeight: "600",
                       }}
                     >
-                      {appt.status}
+                      <FaCheckCircle style={{ marginRight: "6px" }} />
+                      Completed
                     </Badge>
                   </td>
                   <td style={{ padding: "18px", verticalAlign: "middle" }}>
@@ -478,130 +416,24 @@ const TodayAppointments = () => {
                         justifyContent: "center",
                       }}
                     >
-                      {appt.status === "Confirmed" ? (
-                        <Button
-                          style={{
-                            background:
-                              "linear-gradient(135deg, #6f42c1, #9d7bd8)",
-                            border: "none",
-                            padding: "8px 16px",
-                            borderRadius: "8px",
-                            fontSize: "13px",
-                            fontWeight: "600",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                          }}
-                          onClick={() => handleWritePrescription(appt.id)}
-                        >
-                          <FaPrescriptionBottleAlt
-                            style={{ fontSize: "12px" }}
-                          />
-                          Write Prescription
-                        </Button>
-                      ) : appt.status === "Completed" ? (
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "8px",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Badge
-                            bg="success"
-                            style={{
-                              fontSize: "13px",
-                              padding: "8px 16px",
-                              borderRadius: "8px",
-                            }}
-                          >
-                            <FaCheck style={{ marginRight: "4px" }} />
-                            Completed
-                          </Badge>
-                          <Button
-                            style={{
-                              background:
-                                "linear-gradient(135deg, #0d6efd, #0dcaf0)",
-                              border: "none",
-                              padding: "8px 16px",
-                              borderRadius: "8px",
-                              fontSize: "13px",
-                              fontWeight: "600",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
-                            }}
-                            onClick={() => handleWritePrescription(appt.id)}
-                          >
-                            <FaPrescriptionBottleAlt
-                              style={{ fontSize: "12px" }}
-                            />
-                            View Prescription
-                          </Button>
-                        </div>
-                      ) : appt.status === "Pending" ? (
-                        <>
-                          <Button
-                            style={{
-                              background:
-                                "linear-gradient(135deg, #198754, #20c997)",
-                              border: "none",
-                              padding: "8px 16px",
-                              borderRadius: "8px",
-                              fontSize: "13px",
-                              fontWeight: "600",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
-                              transition: "all 0.3s ease",
-                            }}
-                            onClick={() =>
-                              updateAppointmentStatus(
-                                appt.id,
-                                "Confirmed",
-                                appt.patientEmail,
-                                appt.patientName,
-                                appt.date,
-                                appt.slot,
-                              )
-                            }
-                          >
-                            <FaCheck style={{ fontSize: "12px" }} />
-                            Accept
-                          </Button>
-                          <Button
-                            style={{
-                              background:
-                                "linear-gradient(135deg, #dc3545, #c82333)",
-                              border: "none",
-                              padding: "8px 16px",
-                              borderRadius: "8px",
-                              fontSize: "13px",
-                              fontWeight: "600",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
-                              transition: "all 0.3s ease",
-                            }}
-                            onClick={() =>
-                              updateAppointmentStatus(appt.id, "Cancelled")
-                            }
-                          >
-                            <FaTimes style={{ fontSize: "12px" }} />
-                            Reject
-                          </Button>
-                        </>
-                      ) : (
-                        <Badge
-                          bg="secondary"
-                          style={{
-                            fontSize: "13px",
-                            padding: "8px 16px",
-                          }}
-                        >
-                          {appt.status}
-                        </Badge>
-                      )}
+                      <Button
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #0d6efd, #0dcaf0)",
+                          border: "none",
+                          padding: "8px 16px",
+                          borderRadius: "8px",
+                          fontSize: "13px",
+                          fontWeight: "600",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                        onClick={() => handleViewPrescription(appt.id)}
+                      >
+                        <FaPrescriptionBottleAlt style={{ fontSize: "12px" }} />
+                        View Prescription
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -610,28 +442,8 @@ const TodayAppointments = () => {
           </Table>
         </div>
       )}
-
-      {!loading && filteredAppointments.length === 0 && searchTerm && (
-        <Card
-          style={{
-            border: "none",
-            borderRadius: "15px",
-            boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
-            marginTop: "20px",
-          }}
-        >
-          <Card.Body style={{ padding: "60px", textAlign: "center" }}>
-            <h4 style={{ color: "#6c757d", marginBottom: "10px" }}>
-              No appointments found for "{searchTerm}"
-            </h4>
-            <p style={{ color: "#adb5bd", marginBottom: "0" }}>
-              Try searching with a different name or phone number
-            </p>
-          </Card.Body>
-        </Card>
-      )}
     </div>
   );
 };
 
-export default TodayAppointments;
+export default CompletedAppointments;

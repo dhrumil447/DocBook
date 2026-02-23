@@ -1,5 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { NavLink } from "react-router";
+import axios from "axios";
+import moment from "moment";
 import {
   FaBook,
   FaClock,
@@ -8,22 +10,81 @@ import {
   FaUserMd,
   FaHospital,
   FaCalendarDay,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaUserCircle,
 } from "react-icons/fa";
-import { MdDashboard } from "react-icons/md";
-import { Nav, Offcanvas } from "react-bootstrap";
+import { MdDashboard, MdPending } from "react-icons/md";
+import { Nav, Offcanvas, Badge } from "react-bootstrap";
 
 const Drsidebar = ({ show, setShow }) => {
+  const [stats, setStats] = useState({
+    pendingCount: 0,
+    todayCount: 0,
+  });
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const doctorId = JSON.parse(sessionStorage.getItem("DocBook"))?.id;
+      if (!doctorId) return;
+
+      const res = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/appointments?doctor_id=${doctorId}`,
+      );
+
+      const pending = res.data.filter(
+        (appt) => appt.status === "Pending",
+      ).length;
+
+      const today = moment().format("YYYY-MM-DD");
+      const todayAppts = res.data.filter((appt) => {
+        const apptDate = moment(appt.appointment_date).format("YYYY-MM-DD");
+        return apptDate === today;
+      }).length;
+
+      setStats({
+        pendingCount: pending,
+        todayCount: todayAppts,
+      });
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    }
+  };
+
   const links = [
     { url: "/doctor/dashboard", text: "Dashboard", icon: <MdDashboard /> },
     {
       url: "/doctor/today",
       text: "Today's Appointments",
       icon: <FaCalendarDay />,
+      badge: stats.todayCount > 0 ? stats.todayCount : null,
+      badgeColor: "#28a745",
     },
     { url: "/doctor/setslot", text: "Set Slot", icon: <FaClock /> },
-    { url: "/doctor/ap", text: "All Appointments", icon: <FaBook /> },
+    {
+      url: "/doctor/ap",
+      text: "All Appointments",
+      icon: <FaBook />,
+      badge: stats.pendingCount > 0 ? stats.pendingCount : null,
+      badgeColor: "#ffc107",
+    },
+    {
+      url: "/doctor/completed",
+      text: "Completed Appointments",
+      icon: <FaCheckCircle />,
+    },
+    {
+      url: "/doctor/rejected",
+      text: "Rejected Appointments",
+      icon: <FaTimesCircle />,
+    },
     { url: "/doctor/patient", text: "Patients", icon: <FaUserMd /> },
     { url: "/doctor/review", text: "Reviews", icon: <FaCommentMedical /> },
+    { url: "/doctor/profile", text: "Edit Profile", icon: <FaUserCircle /> },
   ];
 
   const navLinkStyle = {
@@ -107,7 +168,21 @@ const Drsidebar = ({ show, setShow }) => {
               style={navLinkStyle}
             >
               <span style={{ fontSize: "18px" }}>{link.icon}</span>
-              <span>{link.text}</span>
+              <span style={{ flex: 1 }}>{link.text}</span>
+              {link.badge && (
+                <Badge
+                  pill
+                  style={{
+                    backgroundColor: link.badgeColor,
+                    color: "white",
+                    fontSize: "11px",
+                    padding: "4px 8px",
+                    fontWeight: "700",
+                  }}
+                >
+                  {link.badge}
+                </Badge>
+              )}
             </Nav.Link>
           ))}
         </Nav>
@@ -148,7 +223,21 @@ const Drsidebar = ({ show, setShow }) => {
                 onClick={() => setShow(false)}
               >
                 <span style={{ fontSize: "18px" }}>{link.icon}</span>
-                <span>{link.text}</span>
+                <span style={{ flex: 1 }}>{link.text}</span>
+                {link.badge && (
+                  <Badge
+                    pill
+                    style={{
+                      backgroundColor: link.badgeColor,
+                      color: "white",
+                      fontSize: "11px",
+                      padding: "4px 8px",
+                      fontWeight: "700",
+                    }}
+                  >
+                    {link.badge}
+                  </Badge>
+                )}
               </Nav.Link>
             ))}
           </Nav>

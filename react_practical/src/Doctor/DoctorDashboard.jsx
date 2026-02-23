@@ -172,19 +172,32 @@ const DoctorDashboard = () => {
       );
       setRecentPatients(recentPatientsData.filter((p) => p !== null));
 
-      // Calculate total revenue from payments
+      // Calculate total revenue from payments - ONLY from completed appointments
       try {
-        const paymentsResponse = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/payments?doctor_id=${doctorId}`,
-        );
-        const totalRevenue = paymentsResponse.data.reduce((sum, payment) => {
-          const amount = parseFloat(payment.amount);
-          if (!isNaN(amount)) {
-            return sum + amount;
-          }
-          return sum;
-        }, 0);
-        setRevenue(totalRevenue);
+        const completedAppointmentIds = completed.map((appt) => appt.id);
+
+        if (completedAppointmentIds.length > 0) {
+          // Fetch all payments for this doctor
+          const paymentsResponse = await axios.get(
+            `${import.meta.env.VITE_BASE_URL}/payments?doctor_id=${doctorId}`,
+          );
+
+          // Filter payments to only include those from completed appointments
+          const completedPayments = paymentsResponse.data.filter((payment) =>
+            completedAppointmentIds.includes(payment.appointment_id),
+          );
+
+          const totalRevenue = completedPayments.reduce((sum, payment) => {
+            const amount = parseFloat(payment.amount);
+            if (!isNaN(amount)) {
+              return sum + amount;
+            }
+            return sum;
+          }, 0);
+          setRevenue(totalRevenue);
+        } else {
+          setRevenue(0);
+        }
       } catch (error) {
         console.error("Error fetching payment data:", error);
         setRevenue(0);
